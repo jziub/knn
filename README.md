@@ -38,8 +38,8 @@ and http://pages.uoregon.edu/koch/texshop/obtaining.html
 
 This will produce a file called `scaling-k-means.pdf` that describes the basic clustering algorithm used here.  The idea is 
 to do a self-adapting single-pass clustering algorithm to get a rough clustering of the data with lots and lots of clusters.
-The guarantee here is that the clusters that result will be a decent surrogate for the distribution of the original data.  
-Then these clusters can themselves be clustered in memory to get a high quality clustering of the original data.  Since we 
+The guarantee here is that the clusters that result will be a decent surrogate for the distribution of the original data.  These clusters 
+can then themselves be clustered in memory to get a high quality clustering of the original data.  Since we 
 don't really care directly about the output of the single-pass clustering, we have latitude in the single-pass algorithm that 
 would not normally be available.
 
@@ -54,7 +54,7 @@ to order the points.  That makes the code very simple.
 
 All of this is dependendent on the relatively new ability to wrap Mahout vectors efficiently.  This is provided by the
 abstract class DelegatingVector.  The WeightedVector that is used by the projection search is an example of a DelegatingVector.
-The Centroid class used in the clustering code is an extension of a WeightedVector which allows the clustering code to 
+The Centroid class used in the clustering code is an extension of a WeightedVector.  That allows the clustering code to 
 cluster Centroids as well as Vectors.
 
 
