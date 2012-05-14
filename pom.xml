@@ -1,65 +1,106 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
 
-    <groupId>knn</groupId>
-    <artifactId>knn</artifactId>
-    <version>0.1</version>
-    <dependencies>
-        <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
-            <version>10.0.1</version>
-        </dependency>
+	<repositories>
+		<repository>
+			<id>maven2-repository.java.net</id>
+			<name>Java.net Repository for Maven</name>
+			<url>http://download.java.net/maven/2</url>
+			<layout>default</layout>
+		</repository>
+		<repository>
+			<id>archiva.bitternut.cs.indiana.edu</id>
+			<name>Archiva Repository on bitternut</name>
+			<url>http://bitternut.cs.indiana.edu:10090/archiva/repository/internal</url>
+		</repository>
+		<repository>
+			<id>archiva.bitternut.cs.indiana.edu/snapshots</id>
+			<name>Archiva Repository snapshots on bitternut</name>
+			<url>http://bitternut.cs.indiana.edu:10090/archiva/repository/snapshots</url>
+		</repository>
+	</repositories>
 
-        <dependency>
-            <groupId>org.apache.hadoop</groupId>
-            <artifactId>hadoop-core</artifactId>
-            <version>0.20.204.0</version>
-            <!--<scope>provided</scope>-->
-        </dependency>
+	<groupId>knn</groupId>
+	<artifactId>knn</artifactId>
+	<version>0.1</version>
+	<dependencies>
+		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+			<version>10.0.1</version>
+		</dependency>
 
-        <dependency>
-            <groupId>org.apache.mahout</groupId>
-            <artifactId>mahout-core</artifactId>
-            <!--<exclusions>-->
-                <!--<exclusion>-->
-                    <!--<groupId>org.apache.hadoop</groupId>-->
-                    <!--<artifactId>hadoop-core</artifactId>-->
-                <!--</exclusion>-->
-            <!--</exclusions>-->
-            <version>0.6</version>
-        </dependency>
+		<dependency>
+			<groupId>org.apache.hadoop</groupId>
+			<artifactId>hadoop-core</artifactId>
+			<version>0.20.204.0</version>
+			<!--<scope>provided</scope> -->
+		</dependency>
 
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.7</version>
-            <scope>test</scope>
-        </dependency>
-    </dependencies>
+		<dependency>
+			<groupId>org.apache.mahout</groupId>
+			<artifactId>mahout-core</artifactId>
+			<!--<exclusions> -->
+			<!--<exclusion> -->
+			<!--<groupId>org.apache.hadoop</groupId> -->
+			<!--<artifactId>hadoop-core</artifactId> -->
+			<!--</exclusion> -->
+			<!--</exclusions> -->
+			<version>0.6</version>
+		</dependency>
 
-    <build>
-        <plugins>
-            <plugin>
-                <artifactId>maven-assembly-plugin</artifactId>
-                <configuration>
-                    <descriptorRefs>
-                        <descriptorRef>jar-with-dependencies</descriptorRef>
-                    </descriptorRefs>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>make-my-jar-with-dependencies</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>single</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.7</version>
+			<scope>test</scope>
+		</dependency>
+
+		<!-- -->
+		<dependency>
+			<groupId>org.apache.amber</groupId>
+			<artifactId>oauth2-client</artifactId>
+			<version>0.22-incubating-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.amber</groupId>
+			<artifactId>oauth2-authzserver</artifactId>
+			<version>0.22-incubating-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.amber</groupId>
+			<artifactId>oauth2-httpclient4</artifactId>
+			<version>0.22-incubating-SNAPSHOT</version>
+		</dependency>
+
+		<dependency>
+			<groupId>gov.loc.repository</groupId>
+			<artifactId>pairtree</artifactId>
+			<version>1.1.1</version>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<configuration>
+					<descriptorRefs>
+						<descriptorRef>jar-with-dependencies</descriptorRef>
+					</descriptorRefs>
+				</configuration>
+				<executions>
+					<execution>
+						<id>make-my-jar-with-dependencies</id>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
 </project>

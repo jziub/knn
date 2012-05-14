@@ -28,12 +28,18 @@ package edu.indiana.d2i.htrc.io;
 
 import java.io.IOException;
 
+import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 
-public class IDRecorderReader<KEYIN, VALUEIN> extends RecordReader<KEYIN, VALUEIN> {
+import edu.indiana.d2i.htrc.HTRCDataAPIClient;
 
+public class IDRecorderReader extends RecordReader<Text, Text> {
+
+	private HTRCDataAPIClient dataClient = null;
+	private Text key, value;
+	
 	@Override
 	public void close() throws IOException {
 		// TODO Auto-generated method stub
@@ -41,15 +47,13 @@ public class IDRecorderReader<KEYIN, VALUEIN> extends RecordReader<KEYIN, VALUEI
 	}
 
 	@Override
-	public KEYIN getCurrentKey() throws IOException, InterruptedException {
-		// TODO Auto-generated method stub
-		return null;
+	public Text getCurrentKey() throws IOException, InterruptedException {
+		return key;
 	}
 
 	@Override
-	public VALUEIN getCurrentValue() throws IOException, InterruptedException {
-		// TODO Auto-generated method stub
-		return null;
+	public Text getCurrentValue() throws IOException, InterruptedException {
+		return value;
 	}
 
 	@Override
@@ -59,15 +63,15 @@ public class IDRecorderReader<KEYIN, VALUEIN> extends RecordReader<KEYIN, VALUEI
 	}
 
 	@Override
-	public void initialize(InputSplit arg0, TaskAttemptContext arg1)
+	public void initialize(InputSplit inputSplit, TaskAttemptContext taskAttemptContext)
 			throws IOException, InterruptedException {
-		// TODO Auto-generated method stub
-		
+//		dataClient
 	}
 
 	@Override
 	public boolean nextKeyValue() throws IOException, InterruptedException {
-		// TODO Auto-generated method stub
+		
+		
 		return false;
 	}
 
