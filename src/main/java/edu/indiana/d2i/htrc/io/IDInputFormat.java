@@ -37,28 +37,30 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.JobContext;
 import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 
-import edu.indiana.d2i.htrc.HTRCConstaints;
+import edu.indiana.d2i.htrc.HTRCConstants;
 
-public class IDInputFormat<K, V> extends FileInputFormat<K, V>  {
+public class IDInputFormat extends FileInputFormat<Text, Text>  {
 	private static final Log logger = LogFactory.getLog(IDInputFormat.class);
 	
 	@Override
-	public RecordReader<K, V> createRecordReader(InputSplit arg0,
+	public RecordReader<Text, Text> createRecordReader(InputSplit arg0,
 			TaskAttemptContext arg1) throws IOException, InterruptedException {
-		return null;
+		return new IDRecorderReader();
 	}
 
 	@Override
 	public List<InputSplit> getSplits(JobContext job) throws IOException {
-		int numIdsInSplit = job.getConfiguration().getInt(HTRCConstaints.MAX_IDNUM_SPLIT, 
+		int numIdsInSplit = job.getConfiguration().getInt(HTRCConstants.MAX_IDNUM_SPLIT, 
 				(int)1e6);
-		String hostStr = job.getConfiguration().get(HTRCConstaints.HOSTS_SEPARATEDBY_COMMA);
+		String hostStr = job.getConfiguration().get(HTRCConstants.HOSTS_SEPARATEDBY_COMMA, 
+				"https://129-79-49-119.dhcp-bl.indiana.edu:25443/data-api");
 		if (hostStr == null) 
 			throw new RuntimeException("Cannot find hosts of HTRC Data Storage.");
 		String[] hosts = hostStr.split(",");
@@ -79,11 +81,12 @@ public class IDInputFormat<K, V> extends FileInputFormat<K, V>  {
 						split = new IDInputSplit(hosts);
 					}
 				} catch (InterruptedException e) {
-					e.printStackTrace();
+					logger.error(e);
 				}
 			}
 			reader.close();
 		}
+		if (split != null) splits.add(split);
 		
 		logger.info("#Splits " + splits.size());
 		return splits;

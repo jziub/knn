@@ -43,7 +43,7 @@ public class StreamingKmeansTest {
         for (int i = 0; i < 8; i++) {
             m.viewRow(i).assign(new double[]{0.125 * (i & 4), i & 2, i & 1});
         }
-        Assert.assertEquals(0.5, StreamingKmeans.estimateCutoff(m), 1e-9);
+        Assert.assertEquals(0.5, StreamingKmeans.estimateCutoff(m, 100), 1e-9);
     }
 
     @Test

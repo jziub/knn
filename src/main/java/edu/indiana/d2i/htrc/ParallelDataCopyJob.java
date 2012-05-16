@@ -45,24 +45,29 @@ public class ParallelDataCopyJob extends Configured implements Tool {
 	private static final Log logger = LogFactory.getLog(ParallelDataCopyJob.class);
 	
 	private void printUsage() {
-		
+		System.out.println("Bad input arguments!");
+		System.exit(1);
 	}
 	
 	@Override
 	public int run(String[] args) throws Exception {
-		if (args.length != 2) {
+		if (args.length != 3) {
 			printUsage();
 		}
 		
 		String inputPath = args[0];
 		String outputPath = args[1];
+		int maxIdsPerSplit = Integer.valueOf(args[2]);
 		
 		logger.info("ParallelDataCopyJob ");
 		logger.info(" - input: " + inputPath);
 		logger.info(" - output: " + outputPath);
+		logger.info(" - maxIdsPerSplit: " + maxIdsPerSplit);
 		
 		Job job = new Job(getConf(), "Copy data from HTRC data storage parallely.");
 		job.setJarByClass(ParallelDataCopyJob.class);
+		
+		job.getConfiguration().setInt(HTRCConstants.MAX_IDNUM_SPLIT, maxIdsPerSplit);
 		
 		job.setInputFormatClass(IDInputFormat.class);
 		job.setOutputFormatClass(SequenceFileOutputFormat.class);

@@ -28,6 +28,7 @@ package edu.indiana.d2i.htrc;
 
 import java.io.BufferedReader;
 import java.io.DataInputStream;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Iterator;
 import java.util.Map.Entry;
@@ -50,6 +51,15 @@ public class SequentialDataCopyJob extends Configured implements Tool {
 		System.exit(1);
 	}
 	
+	private void text2Seq(Iterable<Entry<String, String>> content, ChunkedWriter chunkWriter) 
+			throws IOException {
+		Iterator<Entry<String, String>> iterator = content.iterator();
+		while (iterator.hasNext()) {
+			Entry<String, String> entry = iterator.next();
+			chunkWriter.write(entry.getKey(), entry.getValue());
+		}
+	}
+	
 	@Override
 	public int run(String[] args) throws Exception {
 		if (args.length != 3) {
@@ -60,7 +70,7 @@ public class SequentialDataCopyJob extends Configured implements Tool {
 		String outputPath = args[1];
 		int chunkSizeInMB = Integer.valueOf(args[2]);
 		
-		logger.info("ParallelDataCopyJob ");
+		logger.info("SequentialDataCopyJob ");
 		logger.info(" - input: " + inputPath);
 		logger.info(" - output: " + outputPath);
 		logger.info(" - chunkSizeInMB: " + chunkSizeInMB);
@@ -82,18 +92,14 @@ public class SequentialDataCopyJob extends Configured implements Tool {
 		while ((line = reader.readLine()) != null) {
 			idList.append(line + "|");
 			if ((++idNum) >= idNumThreshold) {
-				Iterable<Entry<String, String>> content = 
-						client.getID2Content(idList.toString());
-				Iterator<Entry<String, String>> iterator = content.iterator();
-				while (iterator.hasNext()) {
-					Entry<String, String> entry = iterator.next();
-					chunkWriter.write(entry.getKey(), entry.getValue());
-				}
-				
+				text2Seq(client.getID2Content(idList.toString()), chunkWriter);
 				idList = new StringBuilder();
 				idNum = 0;
 			}
 		}
+		if (idList.length() > 0)
+			text2Seq(client.getID2Content(idList.toString()), chunkWriter);
+		
 		chunkWriter.close();
 		reader.close();
 		

@@ -39,7 +39,7 @@ public class HTRCDataAPIClientTest {
 		boolean selfsigned = true;
 
 		HTRCDataAPIClient client = new HTRCDataAPIClient.Builder(url, delimitor)
-				.authentication(true).selfsigned(true).clientID(clientID)
+				.authentication(selfsigned).selfsigned(selfsigned).clientID(clientID)
 				.clientSecrete(clientSecrete).tokenLocation(tokenLoc).build();
 		
 		String queryStr = "inu.30000088849835|inu.30000108255831";

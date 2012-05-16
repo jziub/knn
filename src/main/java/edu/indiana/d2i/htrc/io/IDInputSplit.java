@@ -30,6 +30,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import org.apache.hadoop.io.Writable;
@@ -39,6 +40,9 @@ public class IDInputSplit extends InputSplit implements Writable {
 	private List<String> idList = new ArrayList<String>();
 	private String[] hosts = null;
 
+	// get called by newInstance()
+	protected IDInputSplit() {}
+	
 	@Override
 	public void readFields(DataInput input) throws IOException {
 		int idListSize = input.readInt();
@@ -47,6 +51,7 @@ public class IDInputSplit extends InputSplit implements Writable {
 			idList.add(input.readUTF());
 		}
 		int hostsSize = input.readInt();
+		hosts = new String[hostsSize];
 		for (int i = 0; i < hostsSize; i++) {
 			hosts[i] = input.readUTF();
 		}
@@ -54,16 +59,19 @@ public class IDInputSplit extends InputSplit implements Writable {
 
 	@Override
 	public void write(DataOutput output) throws IOException {
-		output.write(idList.size());
+		output.writeInt(idList.size());
 		for (String id : idList) {
 			output.writeUTF(id);
 		}
-		output.write(hosts.length);
+		output.writeInt(hosts.length);
 		for (int i = 0; i < hosts.length; i++) {
 			output.writeUTF(hosts[i]);
 		}
 	}
 
+	/**
+	 * return the size of id list
+	 */
 	@Override
 	public long getLength() throws IOException, InterruptedException {
 		return idList.size();
@@ -80,5 +88,9 @@ public class IDInputSplit extends InputSplit implements Writable {
 	
 	public IDInputSplit(String[] hosts) {
 		this.hosts = hosts;
+	}
+	
+	public Iterator<String> getIDIterator() {
+		return idList.iterator();
 	}
 }

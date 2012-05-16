@@ -39,13 +39,13 @@ public class StreamingKmeans {
     // and small values of characteristic size seem to make the clustering
     // a bit better.  Too small a value of BETA, however, means that we
     // have to collapse the set of centroids too often.
-    private static final double BETA = 1.3;
+    protected static final double BETA = 1.3;
 
     // this is the current value of the characteristic size.  Points
     // which are much closer than this to a centroid will stick to it
     // almost certainly.  Points further than this to any centroid will
     // form a new cluster.
-    private double distanceCutoff;
+    protected double distanceCutoff;
 
     public Searcher cluster(final DistanceMeasure distance, Iterable<MatrixSlice> data, int maxClusters) {
         final int width = data.iterator().next().vector().size();
@@ -63,14 +63,14 @@ public class StreamingKmeans {
 
     public Searcher cluster(Iterable<MatrixSlice> data, int maxClusters, CentroidFactory centroidFactory) {
         // initialize scale
-        distanceCutoff = estimateCutoff(data);
+        distanceCutoff = estimateCutoff(data, 100);
 
         // cluster the data
         return clusterInternal(data, maxClusters, 1, centroidFactory);
     }
 
-    public static double estimateCutoff(Iterable<MatrixSlice> data) {
-        Iterable<MatrixSlice> top = Iterables.limit(data, 100);
+    public static double estimateCutoff(Iterable<MatrixSlice> data, int sampleNum) {
+        Iterable<MatrixSlice> top = Iterables.limit(data, sampleNum);
 
         // first we need to have a reasonable value for what a "small" distance is
         // so we find the shortest distance between any of the first hundred data points
@@ -86,7 +86,7 @@ public class StreamingKmeans {
         return distanceCutoff;
     }
 
-    private UpdatableSearcher clusterInternal(Iterable<MatrixSlice> data, int maxClusters, int depth, CentroidFactory centroidFactory) {
+    protected UpdatableSearcher clusterInternal(Iterable<MatrixSlice> data, int maxClusters, int depth, CentroidFactory centroidFactory) {
 
         // to cluster, we scan the data and either add each point to the nearest group or create a new group.
         // when we get too many groups, we need to increase the threshold and rescan our current groups

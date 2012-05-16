@@ -29,7 +29,6 @@ public abstract class AbstractSamplerFunction implements Sampler<Double>, Double
    * @param ignored Ignored argument
    * @return A sample from this distribution.
    */
-  @Override
   public double apply(double ignored) {
     return sample();
   }

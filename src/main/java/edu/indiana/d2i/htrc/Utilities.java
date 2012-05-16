@@ -22,24 +22,39 @@
 #
 # -----------------------------------------------------------------
 # 
-*/
+ */
 
 package edu.indiana.d2i.htrc;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.PathFilter;
 
 public class Utilities {
 	public static HTRCDataAPIClient creatDataAPIClient(Configuration conf) {
-		String dataEPR = conf.get(HTRCConstaints.DATA_API_EPR, "https://129-79-49-119.dhcp-bl.indiana.edu:25443/data-api");
-		String delimitor = conf.get(HTRCConstaints.DATA_API_URL_DELIMITOR, "|");
-		String clientID = conf.get(HTRCConstaints.DATA_API_CLIENTID, "yim");
-		String clientSecrete = conf.get(HTRCConstaints.DATA_API_CLIENTSECRETE, "yim");
-		String tokenLoc = conf.get(HTRCConstaints.DATA_API_TOKENLOC, "https://129-79-49-119.dhcp-bl.indiana.edu:25443/oauth2/token?grant_type=client_credentials");
-		boolean selfsigned = conf.getBoolean(HTRCConstaints.DATA_API_SELFSIGNED, true);
-			
-		HTRCDataAPIClient dataClient = new HTRCDataAPIClient.Builder(dataEPR, delimitor)
-			.authentication(true).selfsigned(selfsigned).clientID(clientID)
-			.clientSecrete(clientSecrete).tokenLocation(tokenLoc).build();
+		String dataEPR = conf.get(HTRCConstants.DATA_API_EPR,
+				"https://129-79-49-119.dhcp-bl.indiana.edu:25443/data-api");
+		String delimitor = conf.get(HTRCConstants.DATA_API_URL_DELIMITOR, "|");
+		String clientID = conf.get(HTRCConstants.DATA_API_CLIENTID, "yim");
+		String clientSecrete = conf.get(HTRCConstants.DATA_API_CLIENTSECRETE,
+				"yim");
+		String tokenLoc = conf
+				.get(HTRCConstants.DATA_API_TOKENLOC,
+						"https://129-79-49-119.dhcp-bl.indiana.edu:25443/oauth2/token?grant_type=client_credentials");
+		boolean selfsigned = conf.getBoolean(
+				HTRCConstants.DATA_API_SELFSIGNED, true);
+
+		HTRCDataAPIClient dataClient = new HTRCDataAPIClient.Builder(dataEPR,
+				delimitor).authentication(true).selfsigned(selfsigned)
+				.clientID(clientID).clientSecrete(clientSecrete)
+				.tokenLocation(tokenLoc).build();
 		return dataClient;
 	}
+
+	public static final PathFilter HIDDEN_FILE_FILTER = new PathFilter() {
+		public boolean accept(Path p) {
+			String name = p.getName();
+			return !name.startsWith("_") && !name.startsWith(".");
+		}
+	};
 }
