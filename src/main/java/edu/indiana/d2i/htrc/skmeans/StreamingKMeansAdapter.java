@@ -31,13 +31,17 @@ import java.util.List;
 import java.util.Random;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.mahout.common.ClassUtils;
 import org.apache.mahout.common.RandomUtils;
+import org.apache.mahout.common.distance.DistanceMeasure;
 import org.apache.mahout.knn.Centroid;
 import org.apache.mahout.knn.WeightedVector;
 import org.apache.mahout.knn.means.StreamingKmeans;
+import org.apache.mahout.knn.search.ProjectionSearch;
 import org.apache.mahout.knn.search.Searcher;
 import org.apache.mahout.knn.search.UpdatableSearcher;
 import org.apache.mahout.math.MatrixSlice;
+import org.apache.mahout.math.Vector;
 import org.apache.mahout.math.VectorWritable;
 
 import com.google.common.collect.Lists;
@@ -47,25 +51,37 @@ import edu.indiana.d2i.htrc.HTRCConstants;
 /**
  * Slightly modify the original one to let it work in MapReduce context.
  */
-public class StreamingKMeansAdapter extends StreamingKmeans {
+public final class StreamingKMeansAdapter extends StreamingKmeans {
 	private CentroidFactory centroidFactory = null;
 	private UpdatableSearcher centroids = null;
 	private int maxClusters;
 	private int numCluster = 0;
 	
-	public StreamingKMeansAdapter(Configuration conf, CentroidFactory centroidFactory) {
+	public StreamingKMeansAdapter() {}
+	
+	public StreamingKMeansAdapter(Configuration conf) {
 		float cutoff = conf.getFloat(
-				HTRCConstants.STREAMING_KMEANS_CUTOFF, 0);
+				StreamingKMeansConfigKeys.CUTOFF, 0);
 		int maxClusters = conf.getInt(
-				HTRCConstants.STREAMING_KMEANS_MAXCLUSTER, 0);
-		if (cutoff == 0 || maxClusters == 0)
+				StreamingKMeansConfigKeys.MAXCLUSTER, 0);
+		final int dim = conf.getInt(StreamingKMeansConfigKeys.VECTOR_DIMENSION, 0);
+		final DistanceMeasure measure =
+		        ClassUtils.instantiateAs(conf.get(StreamingKMeansConfigKeys.DIST_MEASUREMENT), DistanceMeasure.class);
+		
+		if (cutoff == 0 || maxClusters == 0 || dim == 0)
 			throw new RuntimeException(
 					"Illegal parameters for streaming kmeans, cutoff: "
-							+ cutoff + ", maxClusters: " + maxClusters);
+							+ cutoff + ", maxClusters: " + maxClusters + ", dimension: " + dim);
 		
 		this.maxClusters = maxClusters;
 		this.distanceCutoff = cutoff;
-		this.centroidFactory = centroidFactory;
+		this.centroidFactory = new StreamingKmeans.CentroidFactory() {
+			@Override
+			public UpdatableSearcher create() {
+				// (dimension, distance obj, 0 < #projections < 100, searchSize)
+				return new ProjectionSearch(dim, measure, 8, 20);
+			}
+		};
 		this.centroids = centroidFactory.create();
 	}
 	
@@ -73,24 +89,28 @@ public class StreamingKMeansAdapter extends StreamingKmeans {
 		return centroids;
 	}
 	
-	public void cluster(VectorWritable vector) {
-		if (centroids.getSearchSize() == 0) {
-			centroids.add(Centroid.create(0, vector.get()), 0);
+	public void add(Vector vector) {
+		centroids.add(Centroid.create(0, vector), 0);
+	}
+	
+	public void cluster(Vector vector) {
+		if (centroids.size() == 0) {
+			centroids.add(Centroid.create(0, vector), 0);
 		}
 		else {
 			Random rand = RandomUtils.getRandom();
 			
 			// estimate distance d to closest centroid
-            WeightedVector closest = centroids.search(vector.get(), 1).get(0);
+            WeightedVector closest = centroids.search(vector, 1).get(0);
             
             if (rand.nextDouble() < closest.getWeight() / distanceCutoff) {
                 // add new centroid, note that the vector is copied because we may mutate it later
-                centroids.add(Centroid.create(centroids.size(), vector.get()), centroids.size());
+                centroids.add(Centroid.create(centroids.size(), vector), centroids.size());
             } else {
                 // merge against existing
                 Centroid c = (Centroid) closest.getVector();
                 centroids.remove(c);
-                c.update(vector.get());
+                c.update(vector);
                 centroids.add(c, c.getIndex());
             }
 		}

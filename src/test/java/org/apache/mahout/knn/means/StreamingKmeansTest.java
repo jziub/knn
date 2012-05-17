@@ -38,7 +38,7 @@ import static org.junit.Assert.assertTrue;
 
 public class StreamingKmeansTest {
     @Test
-    public void testEstimateBeta() {
+    public static void testEstimateBeta() {
         Matrix m = new DenseMatrix(8, 3);
         for (int i = 0; i < 8; i++) {
             m.viewRow(i).assign(new double[]{0.125 * (i & 4), i & 2, i & 1});
@@ -47,7 +47,7 @@ public class StreamingKmeansTest {
     }
 
     @Test
-    public void testClustering1() {
+    public static void testClustering1() {
         // construct data samplers centered on the corners of a unit cube
         Matrix mean = new DenseMatrix(8, 3);
         List<MultiNormal> rowSamplers = Lists.newArrayList();
@@ -57,7 +57,7 @@ public class StreamingKmeansTest {
         }
 
         // sample a bunch of data points
-        Matrix data = new DenseMatrix(10000, 3);
+        Matrix data = new DenseMatrix(100000, 3);
         for (MatrixSlice row : data) {
             row.vector().assign(rowSamplers.get(row.index() % 8).sample());
         }
@@ -84,7 +84,7 @@ public class StreamingKmeansTest {
                 (t1 - t0) / 1000.0, (t1 - t0) / 1000.0 / data.rowSize() * 1e6);
     }
 
-    private double totalWeight(Iterable<MatrixSlice> data) {
+    private static double totalWeight(Iterable<MatrixSlice> data) {
         double sum = 0;
         for (MatrixSlice row : data) {
             if (row.vector() instanceof WeightedVector) {
@@ -95,4 +95,8 @@ public class StreamingKmeansTest {
         }
         return sum;
     }
+    
+    public static void main(String[] args) {
+		testClustering1();
+	}
 }

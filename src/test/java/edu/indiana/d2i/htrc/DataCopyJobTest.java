@@ -32,14 +32,19 @@ import java.util.Map.Entry;
 import junit.framework.Assert;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.SequenceFile;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.util.Tool;
+import org.apache.hadoop.util.ToolRunner;
 
-public class DataCopyJobTest {
-	public static void main(String[] args) throws Exception {
+public class DataCopyJobTest extends Configured implements Tool {
+	
+	@Override
+	public int run(String[] args) throws Exception {
 		Configuration conf = new Configuration();
 		
 		String outputPath = args[0]; // result
@@ -47,21 +52,38 @@ public class DataCopyJobTest {
 		HTRCDataAPIClient client = Utilities.creatDataAPIClient(conf);
 
 		FileSystem fs = FileSystem.get(conf);
-		FileStatus[] status = fs.listStatus(new Path(outputPath));
+		
+		FileStatus[] status = fs.listStatus(new Path(outputPath), Utilities.HIDDEN_FILE_FILTER);
 		Text key = new Text();
 		Text value = new Text();
 		for (int i = 0; i < status.length; i++) {
-			if (!status[i].getPath().getName().contains("SUCCESS")) {
-				SequenceFile.Reader seqReader = new SequenceFile.Reader(
-						fs, status[i].getPath(), conf);
-				while (seqReader.next(key, value)) {
-					Iterable<Entry<String, String>> content = 
-							client.getID2Content(key.toString());
-					Iterator<Entry<String, String>> iterator = content.iterator();
-					Entry<String, String> entry = iterator.next();
-					Assert.assertEquals(entry.getValue(), value.toString());
-				}
+			SequenceFile.Reader seqReader = new SequenceFile.Reader(
+					fs, status[i].getPath(), conf);
+			while (seqReader.next(key, value)) {
+				Iterable<Entry<String, String>> content = 
+						client.getID2Content(key.toString());
+				Iterator<Entry<String, String>> iterator = content.iterator();
+				Entry<String, String> entry = iterator.next();
+				Assert.assertEquals(entry.getValue(), value.toString());
 			}
 		}
+		
+		System.out.println("Finish validation.");
+		
+//		FileStatus[] status = fs.listStatus(new Path(outputPath), Utilities.HIDDEN_FILE_FILTER);
+//		for (int i = 0; i < status.length; i++) {
+//			System.out.println(status[i].getPath().getName());
+//		}
+//		System.out.println("==========================================");
+//		FileStatus[] globStatus = fs.globStatus(new Path(outputPath));
+//		for (int i = 0; i < globStatus.length; i++) {
+//			System.out.println(globStatus[i].getPath().getName());
+//		}
+		return 0;
+	}
+	
+	public static void main(String[] args) throws Exception {
+		int res = ToolRunner.run(new Configuration(), new DataCopyJobTest(), args);
+		System.exit(res);
 	}
 }

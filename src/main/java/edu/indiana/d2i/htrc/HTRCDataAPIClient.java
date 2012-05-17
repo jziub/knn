@@ -32,11 +32,11 @@ import org.apache.amber.oauth2.common.message.types.GrantType;
 
 public class HTRCDataAPIClient {
 	private final int BUFFER = 2048;
-//	private String apiEPR = "http://smoketree.cs.indiana.edu:25443/data-api";
-	private String apiEPR = "http://129-79-49-119.dhcp-bl.indiana.edu:25443/data-api";
+	private String apiEPR = "129-79-49-119.dhcp-bl.indiana.edu:25443/data-api";
 	private String delimitor = "|";
-	private final String VOLUMEURLPREFIX = "/volumes?volumeIDs=";
-	private final String PAGEURLPREFIX = "/pages?pageIDs=";
+	private final String URLSUFFIX = "https://";
+	private final String VOLUMEURLPREFIX = "/data-api/volumes?volumeIDs=";
+	private final String PAGEURLPREFIX = "/data-api/pages?pageIDs=";
 	private static Pairtree pairtree = new Pairtree();   
 
 	// authentication 
@@ -187,10 +187,13 @@ public class HTRCDataAPIClient {
 	}
 	
 	private HTRCDataAPIClient(String apiEPR, String delimitor) {
-		if (apiEPR.lastIndexOf("/") == apiEPR.length() - 1)
-			this.apiEPR = apiEPR.substring(0, apiEPR.length() - 1);
+		String url = apiEPR;
+		if (!url.contains(URLSUFFIX))
+			url = URLSUFFIX + url;   
+		if (url.lastIndexOf("/") == url.length() - 1)
+			this.apiEPR = url.substring(0, url.length() - 1);
 		else
-			this.apiEPR = apiEPR;
+			this.apiEPR = url;
 		this.delimitor = delimitor;
 	}
 	

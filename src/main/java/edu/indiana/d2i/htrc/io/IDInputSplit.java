@@ -37,7 +37,7 @@ import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapreduce.InputSplit;
 
 public class IDInputSplit extends InputSplit implements Writable {
-	private List<String> idList = new ArrayList<String>();
+	private List<String> idList = null;
 	private String[] hosts = null;
 
 	// get called by newInstance()
@@ -88,6 +88,7 @@ public class IDInputSplit extends InputSplit implements Writable {
 	
 	public IDInputSplit(String[] hosts) {
 		this.hosts = hosts;
+		this.idList = new ArrayList<String>();
 	}
 	
 	public Iterator<String> getIDIterator() {

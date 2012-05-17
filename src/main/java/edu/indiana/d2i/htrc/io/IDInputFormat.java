@@ -69,24 +69,25 @@ public class IDInputFormat extends FileInputFormat<Text, Text>  {
 		IDInputSplit split = new IDInputSplit(hosts);
 		List<InputSplit> splits = new ArrayList<InputSplit>();
 		Path[] dirs = getInputPaths(job);
-		for (int i = 0; i < dirs.length; i++) {
-			FileSystem fs = dirs[i].getFileSystem(job.getConfiguration());
-			DataInputStream fsinput = new DataInputStream(fs.open(dirs[i]));
-			BufferedReader reader = new BufferedReader(new InputStreamReader(fsinput));
-			while ((line = reader.readLine()) != null) {
-				split.addID(line);
-				try {
+		
+		try {
+			for (int i = 0; i < dirs.length; i++) {
+				FileSystem fs = dirs[i].getFileSystem(job.getConfiguration());
+				DataInputStream fsinput = new DataInputStream(fs.open(dirs[i]));
+				BufferedReader reader = new BufferedReader(new InputStreamReader(fsinput));
+				while ((line = reader.readLine()) != null) {
+					split.addID(line);
 					if (split.getLength() >= numIdsInSplit) {
 						splits.add(split);
 						split = new IDInputSplit(hosts);
 					}
-				} catch (InterruptedException e) {
-					logger.error(e);
 				}
+				reader.close();
 			}
-			reader.close();
+			if (split != null && split.getLength() != 0) splits.add(split);
+		} catch (InterruptedException e) {
+			logger.error(e);
 		}
-		if (split != null) splits.add(split);
 		
 		logger.info("#Splits " + splits.size());
 		return splits;

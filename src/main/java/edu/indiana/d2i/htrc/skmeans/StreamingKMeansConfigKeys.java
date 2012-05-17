@@ -31,4 +31,5 @@ public class StreamingKMeansConfigKeys {
 	public static String CUTOFF = "htrc.skmeans.cutoff";
 	public static String MAXCLUSTER = "htrc.skmeans.maxcluster";
 	public static String DIST_MEASUREMENT = "htrc.skmeans.distmeasure";
+	public static String VECTOR_DIMENSION = "htrc.skmeans.vector.dimension";
 }

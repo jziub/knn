@@ -31,7 +31,7 @@ import java.util.Map.Entry;
 
 public class HTRCDataAPIClientTest {
 	public static void main(String[] args) throws Exception {
-		String url = "https://129-79-49-119.dhcp-bl.indiana.edu:25443/data-api";
+		String url = "129-79-49-119.dhcp-bl.indiana.edu:25443";
 		String delimitor = "|";
 		String clientID = "yim";
 		String clientSecrete = "yim";

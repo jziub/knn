@@ -41,7 +41,9 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.SequenceFile;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
+import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
+import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
@@ -67,14 +69,15 @@ public class StreamingKMeansDriver extends Configured implements Tool {
 		System.exit(1);
 	}
 
-	private float estimateCutoff(Configuration conf, String input)
-			throws IOException {
+	private void StreamingKMeansConfigHelper(Configuration conf, String input,
+			int maxCluster) throws IOException {
+		// get samples to calculate scale factor
 		FileSystem fs = FileSystem.get(conf);
-		FileStatus[] globStatus = fs.globStatus(new Path(input),
+		FileStatus[] status = fs.listStatus(new Path(input),
 				Utilities.HIDDEN_FILE_FILTER);
-		int index = 0 + (int) (Math.random() * (globStatus.length + 1));
+		int index = 0 + (int) (Math.random() * (status.length));
 		SequenceFile.Reader seqReader = new SequenceFile.Reader(fs,
-				globStatus[index].getPath(), conf);
+				status[index].getPath(), conf);
 
 		int count = 0;
 		Text key = new Text();
@@ -86,12 +89,28 @@ public class StreamingKMeansDriver extends Configured implements Tool {
 			count++;
 		}
 
-		return (float) StreamingKmeans.estimateCutoff(slices, samplesNum);
+		// set cutoff
+		float cutoff = (float) StreamingKmeans.estimateCutoff(slices,
+				samplesNum);
+		conf.setFloat(StreamingKMeansConfigKeys.CUTOFF, cutoff);
+		logger.info("Scale factor (cutoff) is: " + cutoff);
+
+		// set vector dimension
+		int dim = value.get().size();
+		conf.setInt(StreamingKMeansConfigKeys.VECTOR_DIMENSION, dim);
+		logger.info("Dimemsion of a vector is: " + dim);
+
+		// set maximum #cluster
+		conf.setInt(StreamingKMeansConfigKeys.MAXCLUSTER, maxCluster);
+
+		// set distance measurement
+		conf.set(StreamingKMeansConfigKeys.DIST_MEASUREMENT,
+				EuclideanDistanceMeasure.class.getName());
 	}
 
 	@Override
 	public int run(String[] args) throws Exception {
-		if (args.length != 2) {
+		if (args.length != 3) {
 			printUsage();
 		}
 
@@ -104,19 +123,10 @@ public class StreamingKMeansDriver extends Configured implements Tool {
 		logger.info(" - output: " + output);
 		logger.info(" - maxCluster: " + maxCluster);
 
-		// get samples to calculate scale factor
-		float cutoff = estimateCutoff(getConf(), input);
-
 		// set job
 		Job job = new Job(getConf(), "Streaming KMeans");
-
-		job.getConfiguration().setFloat(StreamingKMeansConfigKeys.CUTOFF,
-				cutoff);
-		job.getConfiguration().setInt(
-				StreamingKMeansConfigKeys.MAXCLUSTER, maxCluster);
-		job.getConfiguration().setClass(
-				StreamingKMeansConfigKeys.DIST_MEASUREMENT,
-				EuclideanDistanceMeasure.class, DistanceMeasure.class);
+		job.setJarByClass(StreamingKMeansDriver.class);
+		StreamingKMeansConfigHelper(job.getConfiguration(), input, maxCluster);
 
 		job.setMapOutputKeyClass(IntWritable.class);
 		job.setMapOutputValueClass(VectorWritable.class);
@@ -125,6 +135,9 @@ public class StreamingKMeansDriver extends Configured implements Tool {
 
 		job.setInputFormatClass(SequenceFileInputFormat.class);
 		job.setOutputFormatClass(SequenceFileOutputFormat.class);
+
+		FileInputFormat.setInputPaths(job, new Path(input));
+		FileOutputFormat.setOutputPath(job, new Path(output));
 
 		job.setMapperClass(StreamingKMeansMapper.class);
 		job.setReducerClass(StreamingKMeansReducer.class);

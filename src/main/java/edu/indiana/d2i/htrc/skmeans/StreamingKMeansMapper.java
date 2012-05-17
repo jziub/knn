@@ -51,23 +51,14 @@ class StreamingKMeansMapper
 	@Override
 	public void map(WritableComparable<?> key, VectorWritable value,
 			Context context) throws IOException, InterruptedException {
-		skmeans.cluster(value);
+		skmeans.cluster(value.get());
 	}
 
 	@Override
 	protected void setup(Context context) throws IOException,
 			InterruptedException {
 		// ??????
-		final DistanceMeasure measure =
-		        ClassUtils.instantiateAs(context.getConfiguration().get(HTRCConstants.STREAMING_KMEANS_DIST_MEASUREMENT), DistanceMeasure.class); 
-		skmeans = new StreamingKMeansAdapter(context.getConfiguration(),
-					new StreamingKmeans.CentroidFactory() {
-            			@Override
-            			public UpdatableSearcher create() {
-            				// (dimension, distance obj, 0 < #projections < 100, searchSize)
-            				return new ProjectionSearch(3, measure, 8, 20);
-            			}
-        			});
+		skmeans = new StreamingKMeansAdapter(context.getConfiguration());
 	}
 
 	@Override

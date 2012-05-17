@@ -46,14 +46,13 @@ import edu.indiana.d2i.htrc.HTRCConstants;
 class StreamingKMeansReducer extends
 		Reducer<IntWritable, VectorWritable, Text, StreamingKMeansCluster> {
 	private StreamingKMeansAdapter skmeans = null;
-
-	private DistanceMeasure distance;
+	private DistanceMeasure distance = null;
 	
 	@Override
 	public void reduce(IntWritable key, Iterable<VectorWritable> values,
 			Context context) throws IOException, InterruptedException {
 		for (VectorWritable vectorWritable : values) {
-			skmeans.cluster(vectorWritable);
+			skmeans.cluster(vectorWritable.get());
 		}
 
 		Text identifier = new Text();
@@ -72,15 +71,7 @@ class StreamingKMeansReducer extends
 			InterruptedException {
 		// ??????
 		distance =
-		        ClassUtils.instantiateAs(context.getConfiguration().get(HTRCConstants.STREAMING_KMEANS_DIST_MEASUREMENT), DistanceMeasure.class);
-		skmeans = new StreamingKMeansAdapter(context.getConfiguration(),
-				new StreamingKmeans.CentroidFactory() {
-					@Override
-					public UpdatableSearcher create() {
-						// (dimension, distance obj, 0 < #projections < 100,
-						// searchSize)
-						return new ProjectionSearch(3, distance, 8, 20);
-					}
-				});
+		        ClassUtils.instantiateAs(context.getConfiguration().get(StreamingKMeansConfigKeys.DIST_MEASUREMENT), DistanceMeasure.class);
+		skmeans = new StreamingKMeansAdapter(context.getConfiguration());
 	}
 }
