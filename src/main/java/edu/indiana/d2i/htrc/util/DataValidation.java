@@ -17,20 +17,20 @@
 # -----------------------------------------------------------------
 #
 # Project: knn
-# File:  SequentialDataCopyJobTest.java
+# File:  DataValidation.java
 # Description:  
 #
 # -----------------------------------------------------------------
 # 
- */
+*/
 
-package edu.indiana.d2i.htrc;
+package edu.indiana.d2i.htrc.util;
 
 import java.util.Iterator;
 import java.util.Map.Entry;
 
-import junit.framework.Assert;
-
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.FileStatus;
@@ -41,21 +41,38 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 
+import edu.indiana.d2i.htrc.HTRCConstants;
 import edu.indiana.d2i.htrc.io.HTRCDataAPIClient;
-import edu.indiana.d2i.htrc.util.Utilities;
 
-public class DataCopyJobTest extends Configured implements Tool {
+public class DataValidation extends Configured implements Tool {
+private static final Log logger = LogFactory.getLog(DataValidation.class);
 	
 	@Override
 	public int run(String[] args) throws Exception {
-		Configuration conf = new Configuration();
+		Configuration conf = getConf();
 		
 		String outputPath = args[0]; // result
+		String dataAPIConfClassName = args[1];
+		
+		logger.info("DataValidation ");
+		logger.info(" - output: " + outputPath);
+		logger.info(" - dataAPIConfClassName: " + dataAPIConfClassName);
+		
+		Utilities.setDataAPIConf(conf, dataAPIConfClassName);
 
-		HTRCDataAPIClient client = Utilities.creatDataAPIClient(conf);
+//		HTRCDataAPIClient client = Utilities.creatDataAPIClient(conf);
+		String dataEPR = conf.get(HTRCConstants.HOSTS_SEPARATEDBY_COMMA, 
+				"https://129-79-49-119.dhcp-bl.indiana.edu:25443/data-api");
+		String delimitor = conf.get(HTRCConstants.DATA_API_URL_DELIMITOR, "|");
+		String clientID = conf.get(HTRCConstants.DATA_API_CLIENTID, "yim");
+		String clientSecrete = conf.get(HTRCConstants.DATA_API_CLIENTSECRETE, "yim");
+		String tokenLoc = conf.get(HTRCConstants.DATA_API_TOKENLOC, "https://129-79-49-119.dhcp-bl.indiana.edu:25443/oauth2/token?grant_type=client_credentials");
+		boolean selfsigned = conf.getBoolean(HTRCConstants.DATA_API_SELFSIGNED, true);
+		HTRCDataAPIClient client = new HTRCDataAPIClient.Builder(dataEPR, delimitor)
+		.authentication(true).selfsigned(selfsigned).clientID(clientID)
+		.clientSecrete(clientSecrete).tokenLocation(tokenLoc).build();
 
 		FileSystem fs = FileSystem.get(conf);
-		
 		FileStatus[] status = fs.listStatus(new Path(outputPath), Utilities.HIDDEN_FILE_FILTER);
 		Text key = new Text();
 		Text value = new Text();
@@ -63,30 +80,24 @@ public class DataCopyJobTest extends Configured implements Tool {
 			SequenceFile.Reader seqReader = new SequenceFile.Reader(
 					fs, status[i].getPath(), conf);
 			while (seqReader.next(key, value)) {
+//				logger.info(key.toString());
 				Iterable<Entry<String, String>> content = 
 						client.getID2Content(key.toString());
 				Iterator<Entry<String, String>> iterator = content.iterator();
 				Entry<String, String> entry = iterator.next();
-				Assert.assertEquals(entry.getValue(), value.toString());
+				if (!entry.getValue().equals(value.toString())) {
+					logger.error("Book : " + key.toString() + " corrupts!");
+				}
 			}
 		}
 		
-		System.out.println("Finish validation.");
-		
-//		FileStatus[] status = fs.listStatus(new Path(outputPath), Utilities.HIDDEN_FILE_FILTER);
-//		for (int i = 0; i < status.length; i++) {
-//			System.out.println(status[i].getPath().getName());
-//		}
-//		System.out.println("==========================================");
-//		FileStatus[] globStatus = fs.globStatus(new Path(outputPath));
-//		for (int i = 0; i < globStatus.length; i++) {
-//			System.out.println(globStatus[i].getPath().getName());
-//		}
+		logger.info("Finish validation.");
+
 		return 0;
 	}
-	
+
 	public static void main(String[] args) throws Exception {
-		int res = ToolRunner.run(new Configuration(), new DataCopyJobTest(), args);
+		int res = ToolRunner.run(new Configuration(), new DataValidation(), args);
 		System.exit(res);
 	}
 }

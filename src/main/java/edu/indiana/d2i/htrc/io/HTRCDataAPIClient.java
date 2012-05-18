@@ -1,4 +1,4 @@
-package edu.indiana.d2i.htrc;
+package edu.indiana.d2i.htrc.io;
 
 import gov.loc.repository.pairtree.Pairtree;
 
@@ -105,8 +105,11 @@ public class HTRCDataAPIClient {
 		public Entry<String, String> next() {
 			try {
 				ByteArrayOutputStream out = new ByteArrayOutputStream();
-				String volumeID = zipEntry.getName();
-				volumeID = volumeID.substring(0, volumeID.length()-1);
+				
+				// zip entry has clean id, transfer to unclean id, data API use unclean id
+				String cleanid = zipEntry.getName();
+				cleanid = cleanid.substring(0, cleanid.length()-1);
+				String volumeID = pairtree.uncleanId(cleanid);
 				do {
 					zipEntry = zipInputStream.getNextEntry();
 					if (zipEntry == null){
@@ -170,11 +173,10 @@ public class HTRCDataAPIClient {
 		URL url = new URL(path);        
         URLConnection connection = url.openConnection();
         connection.addRequestProperty("Authorization", "Bearer " + token);
-        
-//		HttpsURLConnection httpsURLConnection = (HttpsURLConnection) connection;
+      
         httpsURLConnection = (HttpsURLConnection) connection;
 		httpsURLConnection.setRequestMethod("GET");
-		httpsURLConnection.setReadTimeout(1000);
+		httpsURLConnection.setReadTimeout(0); // infinite time out
 
 		if (httpsURLConnection.getResponseCode() == 200) {
 			InputStream inputStream = httpsURLConnection.getInputStream();
@@ -198,7 +200,7 @@ public class HTRCDataAPIClient {
 	}
 	
 	public static class Builder {
-		private String apiEPR = "http://129-79-49-119.dhcp-bl.indiana.edu:25443/data-api";
+		private String apiEPR = "https://129-79-49-119.dhcp-bl.indiana.edu:25443/data-api";
 		private String delimitor = "|";
 		
 		private boolean useAuth = false;

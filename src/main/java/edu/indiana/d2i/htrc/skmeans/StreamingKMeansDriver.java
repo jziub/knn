@@ -56,7 +56,7 @@ import org.apache.mahout.math.MatrixSlice;
 import org.apache.mahout.math.VectorWritable;
 
 import edu.indiana.d2i.htrc.HTRCConstants;
-import edu.indiana.d2i.htrc.Utilities;
+import edu.indiana.d2i.htrc.util.Utilities;
 
 public class StreamingKMeansDriver extends Configured implements Tool {
 	private static final Log logger = LogFactory

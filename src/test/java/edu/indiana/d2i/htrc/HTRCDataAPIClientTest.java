@@ -29,6 +29,8 @@ package edu.indiana.d2i.htrc;
 import java.util.Iterator;
 import java.util.Map.Entry;
 
+import edu.indiana.d2i.htrc.io.HTRCDataAPIClient;
+
 public class HTRCDataAPIClientTest {
 	public static void main(String[] args) throws Exception {
 		String url = "129-79-49-119.dhcp-bl.indiana.edu:25443";

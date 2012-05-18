@@ -39,7 +39,7 @@ import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 
 import edu.indiana.d2i.htrc.HTRCConstants;
-import edu.indiana.d2i.htrc.HTRCDataAPIClient;
+import edu.indiana.d2i.htrc.util.Utilities;
 
 public class IDRecorderReader extends RecordReader<Text, Text> {
 	private static final Log logger = LogFactory.getLog(IDRecorderReader.class);
@@ -118,6 +118,8 @@ public class IDRecorderReader extends RecordReader<Text, Text> {
 		dataClient = new HTRCDataAPIClient.Builder(dataEPR, delimitor)
 			.authentication(true).selfsigned(selfsigned).clientID(clientID)
 			.clientSecrete(clientSecrete).tokenLocation(tokenLoc).build();
+		
+//		dataClient = Utilities.creatDataAPIClient(conf);
 		
 		key = new Text();
 		value = new Text();

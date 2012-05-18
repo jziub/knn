@@ -17,20 +17,22 @@
 # -----------------------------------------------------------------
 #
 # Project: knn
-# File:  SequentialDataValidationJob.java
+# File:  VectorInspection.java
 # Description:  
 #
 # -----------------------------------------------------------------
 # 
 */
 
-package edu.indiana.d2i.htrc;
+package edu.indiana.d2i.htrc.util;
 
-import java.util.Iterator;
-import java.util.Map.Entry;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
-import junit.framework.Assert;
-
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.FileStatus;
@@ -40,41 +42,48 @@ import org.apache.hadoop.io.SequenceFile;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
+import org.apache.mahout.math.VectorWritable;
 
-public class SequentialDataValidationJob extends Configured implements Tool {
-
+/**
+ * It is used to inspect the vectors after transformation of text or cluster result 
+ */
+public class VectorInspection extends Configured implements Tool {
+	private static final Log logger = LogFactory.getLog(VectorInspection.class);
+	
 	@Override
 	public int run(String[] args) throws Exception {
-		Configuration conf = new Configuration();
+		String input = args[0];
 		
-		String outputPath = args[0]; // result
-
-		HTRCDataAPIClient client = Utilities.creatDataAPIClient(conf);
-
+		int numVector = 0;
+		Set<Integer> dimLst = new HashSet<Integer>();
+		
+		Configuration conf = getConf();
 		FileSystem fs = FileSystem.get(conf);
-		
-		FileStatus[] status = fs.listStatus(new Path(outputPath), Utilities.HIDDEN_FILE_FILTER);
+		FileStatus[] status = fs.listStatus(new Path(input),
+				Utilities.HIDDEN_FILE_FILTER);
 		Text key = new Text();
-		Text value = new Text();
+		VectorWritable value = new VectorWritable();
 		for (int i = 0; i < status.length; i++) {
-			SequenceFile.Reader seqReader = new SequenceFile.Reader(
-					fs, status[i].getPath(), conf);
+			SequenceFile.Reader seqReader = new SequenceFile.Reader(fs,
+					status[i].getPath(), conf);
 			while (seqReader.next(key, value)) {
-				Iterable<Entry<String, String>> content = 
-						client.getID2Content(key.toString());
-				Iterator<Entry<String, String>> iterator = content.iterator();
-				Entry<String, String> entry = iterator.next();
-				Assert.assertEquals(entry.getValue(), value.toString());
+				numVector++;
+				dimLst.add(value.get().size());
 			}
 		}
 		
-		System.out.println("Finish validation.");
-
+		logger.info("#vector: " + numVector);
+		logger.info("number of different dimensions: " + dimLst.size());
+		StringBuilder builder = new StringBuilder();
+		for (Integer dim : dimLst) 
+			builder.append(dim + " ");
+		logger.info("" + builder.toString());
+		
 		return 0;
 	}
 
 	public static void main(String[] args) throws Exception {
-		int res = ToolRunner.run(new Configuration(), new SequentialDataValidationJob(), args);
-		System.exit(res);
+		ToolRunner.run(new Configuration(), new VectorInspection(), args);
+		System.exit(0);
 	}
 }

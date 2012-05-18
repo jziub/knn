@@ -43,6 +43,9 @@ import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 import org.apache.mahout.utils.io.ChunkedWriter;
 
+import edu.indiana.d2i.htrc.io.HTRCDataAPIClient;
+import edu.indiana.d2i.htrc.util.Utilities;
+
 public class SequentialDataCopyJob extends Configured implements Tool {
 	private static final Log logger = LogFactory.getLog(SequentialDataCopyJob.class);
 	
@@ -62,20 +65,24 @@ public class SequentialDataCopyJob extends Configured implements Tool {
 	
 	@Override
 	public int run(String[] args) throws Exception {
-		if (args.length != 3) {
+		if (args.length != 4) {
 			printUsage();
 		}
 		
 		String inputPath = args[0];
 		String outputPath = args[1];
 		int chunkSizeInMB = Integer.valueOf(args[2]);
+		String dataAPIConfClassName = args[3];
 		
 		logger.info("SequentialDataCopyJob ");
 		logger.info(" - input: " + inputPath);
 		logger.info(" - output: " + outputPath);
 		logger.info(" - chunkSizeInMB: " + chunkSizeInMB);
+		logger.info(" - dataAPIConfClassName: " + dataAPIConfClassName);
 		
 		Configuration conf = getConf();
+		Utilities.setDataAPIConf(conf, dataAPIConfClassName);
+		
 		HTRCDataAPIClient client = Utilities.creatDataAPIClient(conf);
 		
 		ChunkedWriter chunkWriter = new ChunkedWriter(getConf(), 
