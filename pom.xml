@@ -92,6 +92,13 @@
 			<artifactId>pairtree</artifactId>
 			<version>1.1.1</version>
 		</dependency>
+
+		<!-- opennlp -->
+		<dependency>
+			<groupId>org.apache.opennlp</groupId>
+			<artifactId>opennlp-tools</artifactId>
+			<version>1.5.2-incubating</version>
+		</dependency>
 	</dependencies>
 
 	<build>
