@@ -115,6 +115,10 @@ public class IDRecorderReader extends RecordReader<Text, Text> {
 		tokenLoc = conf.get(HTRCConstants.DATA_API_TOKENLOC, "https://129-79-49-119.dhcp-bl.indiana.edu:25443/oauth2/token?grant_type=client_credentials");
 		selfsigned = conf.getBoolean(HTRCConstants.DATA_API_SELFSIGNED, true);
 			
+		if (dataEPR.equals(HTRCConstants.DATA_API_DEFAULT_URL)) {
+			dataEPR = HTRCConstants.DATA_API_DEFAULT_URL_PREFIX + dataEPR;
+		}
+		
 		dataClient = new HTRCDataAPIClient.Builder(dataEPR, delimitor)
 			.authentication(true).selfsigned(selfsigned).clientID(clientID)
 			.clientSecrete(clientSecrete).tokenLocation(tokenLoc).build();

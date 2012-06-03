@@ -93,7 +93,7 @@ public final class StreamingKMeansAdapter extends StreamingKmeans {
 		centroids.add(Centroid.create(0, vector), 0);
 	}
 	
-	public void cluster(Vector vector) {
+	public final void cluster(Vector vector) {
 		if (centroids.size() == 0) {
 			centroids.add(Centroid.create(0, vector), 0);
 		}

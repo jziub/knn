@@ -38,4 +38,11 @@ public class HTRCConstants {
 	public static String DATA_API_CLIENTSECRETE = "htrc.api.clientsecrete"; 
 	public static String DATA_API_TOKENLOC = "htrc.api.tokenloc";
 	public static String DATA_API_SELFSIGNED = "htrc.api.selfsigned";	
+	
+	// handle URI syntax 
+	public static String DATA_API_DEFAULT_URL = "dhcp-bl.indiana.edu:25443";
+	public static String DATA_API_DEFAULT_URL_PREFIX = "129-79-49-119.";
+	
+	// analyzer
+//	public static String ANALYZER_CLASS = "htrc.analyzer.class";
 }

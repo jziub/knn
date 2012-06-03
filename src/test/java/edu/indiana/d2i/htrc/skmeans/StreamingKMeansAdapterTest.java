@@ -66,17 +66,25 @@ public class StreamingKMeansAdapterTest {
 
 	@Test
 	public static void testCluster() {
+		int dimension = 500;
+		
 		// construct data samplers centered on the corners of a unit cube
-		Matrix mean = new DenseMatrix(8, 3);
+		Matrix mean = new DenseMatrix(8, dimension);
 		List<MultiNormal> rowSamplers = Lists.newArrayList();
 		for (int i = 0; i < 8; i++) {
-			mean.viewRow(i).assign(
-					new double[] { 0.25 * (i & 4), 0.5 * (i & 2), i & 1 });
+//			mean.viewRow(i).assign(
+//					new double[] { 0.25 * (i & 4), 0.5 * (i & 2), i & 1 });
+			
+			double[] random = new double[dimension];
+			for (int j = 0; j < random.length; j++) {
+				random[j] = Math.random();
+			}
+			mean.viewRow(i).assign(random);
 			rowSamplers.add(new MultiNormal(0.01, mean.viewRow(i)));
 		}
 
 		// sample a bunch of data points
-		Matrix data = new DenseMatrix(10000, 3);
+		Matrix data = new DenseMatrix(10000, dimension);
 		for (MatrixSlice row : data) {
 			row.vector().assign(rowSamplers.get(row.index() % 8).sample());
 		}
@@ -90,7 +98,7 @@ public class StreamingKMeansAdapterTest {
 		conf.setFloat(StreamingKMeansConfigKeys.CUTOFF, (float) cutoff);
 		conf.setClass(StreamingKMeansConfigKeys.DIST_MEASUREMENT,
 				EuclideanDistanceMeasure.class, DistanceMeasure.class);
-		conf.setInt(StreamingKMeansConfigKeys.VECTOR_DIMENSION, 3);
+		conf.setInt(StreamingKMeansConfigKeys.VECTOR_DIMENSION, dimension);
 		StreamingKMeansAdapter skmeans = new StreamingKMeansAdapter(conf);
 		// for (MatrixSlice row : Iterables.skip(data, 1)) {
 		// skmeans.cluster(row.vector());
@@ -117,6 +125,8 @@ public class StreamingKMeansAdapterTest {
 		}
 		System.out.printf("%.2f for clustering\n%.1f us per row\n",
 				(t1 - t0) / 1000.0, (t1 - t0) / 1000.0 / data.rowSize() * 1e6);
+		
+		System.out.println("Done??");
 	}
 
 	public static void main(String[] args) {

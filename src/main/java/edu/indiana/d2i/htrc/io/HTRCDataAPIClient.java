@@ -1,5 +1,6 @@
 package edu.indiana.d2i.htrc.io;
 
+import edu.indiana.d2i.htrc.HTRCConstants;
 import gov.loc.repository.pairtree.Pairtree;
 
 import java.io.ByteArrayOutputStream;
@@ -32,7 +33,8 @@ import org.apache.amber.oauth2.common.message.types.GrantType;
 
 public class HTRCDataAPIClient {
 	private final int BUFFER = 2048;
-	private String apiEPR = "129-79-49-119.dhcp-bl.indiana.edu:25443/data-api";
+//	private String apiEPR = "129-79-49-119.dhcp-bl.indiana.edu:25443/data-api";
+	private String apiEPR = HTRCConstants.DATA_API_DEFAULT_URL_PREFIX + HTRCConstants.DATA_API_DEFAULT_URL;
 	private String delimitor = "|";
 	private final String URLSUFFIX = "https://";
 	private final String VOLUMEURLPREFIX = "/data-api/volumes?volumeIDs=";
@@ -200,7 +202,7 @@ public class HTRCDataAPIClient {
 	}
 	
 	public static class Builder {
-		private String apiEPR = "https://129-79-49-119.dhcp-bl.indiana.edu:25443/data-api";
+		private String apiEPR = HTRCConstants.DATA_API_DEFAULT_URL_PREFIX + HTRCConstants.DATA_API_DEFAULT_URL;
 		private String delimitor = "|";
 		
 		private boolean useAuth = false;

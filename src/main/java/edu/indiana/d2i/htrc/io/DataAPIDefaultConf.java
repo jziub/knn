@@ -32,6 +32,6 @@ import edu.indiana.d2i.htrc.HTRCConstants;
 
 public class DataAPIDefaultConf {
 	public void configurate(Configuration conf) {
-		conf.setInt(HTRCConstants.MAX_ID_RETRIEVED, 50);
+		conf.setInt(HTRCConstants.MAX_ID_RETRIEVED, 100);
 	}
 }

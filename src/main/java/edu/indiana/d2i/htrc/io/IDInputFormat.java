@@ -60,7 +60,7 @@ public class IDInputFormat extends FileInputFormat<Text, Text>  {
 		int numIdsInSplit = job.getConfiguration().getInt(HTRCConstants.MAX_IDNUM_SPLIT, 
 				(int)1e6);
 		String hostStr = job.getConfiguration().get(HTRCConstants.HOSTS_SEPARATEDBY_COMMA, 
-				"https://129-79-49-119.dhcp-bl.indiana.edu:25443/data-api");
+				HTRCConstants.DATA_API_DEFAULT_URL);
 		if (hostStr == null) 
 			throw new RuntimeException("Cannot find hosts of HTRC Data Storage.");
 		String[] hosts = hostStr.split(",");

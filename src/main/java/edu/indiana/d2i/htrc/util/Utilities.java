@@ -40,6 +40,17 @@ import edu.indiana.d2i.htrc.io.HTRCDataAPIClient;
 public class Utilities {
 	private static final Log logger = LogFactory.getLog(Utilities.class);
 	
+	public static String path2FileName(String path) {
+		String des = path;
+		int index = des.lastIndexOf("/");
+		if (index == des.length() - 1) {
+			des = des.substring(0, index);
+			index = des.lastIndexOf("/");
+		}
+		
+		return des.substring(index+1);
+	}
+	
 	public static HTRCDataAPIClient creatDataAPIClient(Configuration conf) {
 		String dataEPR = conf.get(HTRCConstants.DATA_API_EPR,
 				"129-79-49-119.dhcp-bl.indiana.edu:25443");
@@ -70,7 +81,7 @@ public class Utilities {
 		
 		logger.info("Data API configuration");
 		logger.info(" - host: " + conf.get(HTRCConstants.HOSTS_SEPARATEDBY_COMMA, 
-				"https://129-79-49-119.dhcp-bl.indiana.edu:25443/data-api"));
+				"129-79-49-119.dhcp-bl.indiana.edu:25443/data-api"));
 		logger.info(" - delimitor: " + conf.get(HTRCConstants.DATA_API_URL_DELIMITOR, "|"));
 		logger.info(" - clientID: " + conf.get(HTRCConstants.DATA_API_CLIENTID, "yim"));
 		logger.info(" - clientSecret: " + conf.get(HTRCConstants.DATA_API_CLIENTSECRETE, "yim"));

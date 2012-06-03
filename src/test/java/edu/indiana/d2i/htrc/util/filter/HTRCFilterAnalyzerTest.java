@@ -40,9 +40,9 @@ public class HTRCFilterAnalyzerTest {
 				.reusableTokenStream(
 						"field",
 						new StringReader(
-								"Pierre Vinken , 61 years old , "
-										+ "will join the board as a nonexecutive director Nov. "
-										+ "29 .Mr. Vinken is chairman of Elsevier N.V. , the Dutch "
+								"a iss Pierre 1 Vinken , 61 years old , "
+										+ "will join the board as joins a nonexecutive joining director Nov. "
+										+ "29 .Mr. car Vinken is cars chairman of Elsevier N.V. , the Dutch "
 										+ "publishing group ."));
 		CharTermAttribute termAtt = stream
 				.addAttribute(CharTermAttribute.class);
@@ -53,6 +53,6 @@ public class HTRCFilterAnalyzerTest {
 			}
 		}
 		
-		System.out.println("Done.");
+		System.out.println("Done???");
 	}
 }

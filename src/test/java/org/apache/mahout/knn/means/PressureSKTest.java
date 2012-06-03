@@ -36,7 +36,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 
-public class StreamingKmeansTest {
+public class PressureSKTest {
     @Test
     public static void testEstimateBeta() {
         Matrix m = new DenseMatrix(8, 3);
@@ -47,28 +47,36 @@ public class StreamingKmeansTest {
     }
 
     @Test
-    public static void testClustering1() {
+    public static void testClustering1(final int dim) {
         // construct data samplers centered on the corners of a unit cube
-        Matrix mean = new DenseMatrix(8, 3);
+    	long t = System.currentTimeMillis();
+        Matrix mean = new DenseMatrix(8, dim);
         List<MultiNormal> rowSamplers = Lists.newArrayList();
         for (int i = 0; i < 8; i++) {
-            mean.viewRow(i).assign(new double[]{0.25 * (i & 4), 0.5 * (i & 2), i & 1});
-            rowSamplers.add(new MultiNormal(0.01, mean.viewRow(i)));
+//            mean.viewRow(i).assign(new double[]{0.25 * (i & 4), 0.5 * (i & 2), i & 1});
+            
+        	double[] random = new double[dim];
+			for (int j = 0; j < random.length; j++) {
+				random[j] = Math.random();
+			}
+        	rowSamplers.add(new MultiNormal(0.01, mean.viewRow(i)));
         }
 
         // sample a bunch of data points
-        Matrix data = new DenseMatrix(10000, 3);
+        Matrix data = new DenseMatrix(10000, dim);
         for (MatrixSlice row : data) {
             row.vector().assign(rowSamplers.get(row.index() % 8).sample());
         }
         long t0 = System.currentTimeMillis();
+        
+        System.out.println("data generator takes " + (t0 - t)/1000.0 + " seconds");
 
         // cluster the data
         final EuclideanDistanceMeasure distance = new EuclideanDistanceMeasure();
         Searcher r = new StreamingKmeans().cluster(data, 1000, new StreamingKmeans.CentroidFactory() {
             @Override
             public UpdatableSearcher create() {
-                return new ProjectionSearch(3, distance, 8, 20);
+                return new ProjectionSearch(dim, distance, 8, 20);
             }
         });
         long t1 = System.currentTimeMillis();
@@ -78,9 +86,9 @@ public class StreamingKmeansTest {
         // and verify that each corner of the cube has a centroid very nearby
         for (MatrixSlice row : mean) {
             WeightedVector v = r.search(row.vector(), 1).get(0);
-            assertTrue(v.getWeight() < 0.05);
+//            assertTrue(v.getWeight() < 0.05);
         }
-        System.out.printf("%.2f for clustering\n%.1f us per row\n",
+        System.out.printf("%.2f seconds for clustering\n%.1f us per row\n",
                 (t1 - t0) / 1000.0, (t1 - t0) / 1000.0 / data.rowSize() * 1e6);
     }
 
@@ -97,6 +105,7 @@ public class StreamingKmeansTest {
     }
     
     public static void main(String[] args) {
-		testClustering1();
+		int dim = Integer.valueOf(args[0]);
+    	testClustering1(dim);
 	}
 }

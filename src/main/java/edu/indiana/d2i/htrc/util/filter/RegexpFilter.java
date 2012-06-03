@@ -17,7 +17,7 @@
 # -----------------------------------------------------------------
 #
 # Project: knn
-# File:  LowerCaseTransformer.java
+# File:  RegexpFilter.java
 # Description:  
 #
 # -----------------------------------------------------------------
@@ -27,27 +27,45 @@
 package edu.indiana.d2i.htrc.util.filter;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Pattern;
 
 import org.apache.lucene.analysis.TokenFilter;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 
-public class LowerCaseTransformer extends TokenFilter {
-	
+/**
+ * keep the term according to the filter
+ */
+public class RegexpFilter extends TokenFilter {
+
 	private CharTermAttribute termAtt = null;
+	private List<Pattern> patterns = new ArrayList<Pattern>();
 	
-	protected LowerCaseTransformer(TokenStream input) {
+	protected RegexpFilter(TokenStream input, String[] regex) {
 		super(input);
 		termAtt = input.addAttribute(CharTermAttribute.class);
+		for (int i = 0; i < regex.length; i++)
+			if (regex[i].length() > 0)
+				patterns.add(Pattern.compile(regex[i]));
 	}
 
+	private final boolean match(String token) {
+		for (Pattern pattern : patterns) {
+			if (pattern.matcher(token).matches())
+				return true;
+		}
+		return false;
+	}
+	
 	@Override
 	public boolean incrementToken() throws IOException {
-		if (input.incrementToken()) {
+		while (input.incrementToken()) {
 			String token = new String(termAtt.buffer(), 0, termAtt.length());
-			termAtt.setEmpty();
-			termAtt.append(token.toLowerCase());
-			return true;
+			if (match(token)) {
+				return true;
+			}
 		}
 		return false;
 	}

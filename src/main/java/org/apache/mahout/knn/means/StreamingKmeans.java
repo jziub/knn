@@ -63,7 +63,10 @@ public class StreamingKmeans {
 
     public Searcher cluster(Iterable<MatrixSlice> data, int maxClusters, CentroidFactory centroidFactory) {
         // initialize scale
+    	long t0 = System.currentTimeMillis();
         distanceCutoff = estimateCutoff(data, 100);
+        long t1 = System.currentTimeMillis();
+        System.out.println("estimateCutoff takes " + (t1 - t0)/1000.0 + " seconds.");
 
         // cluster the data
         return clusterInternal(data, maxClusters, 1, centroidFactory);

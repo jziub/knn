@@ -26,10 +26,13 @@
 
 package edu.indiana.d2i.htrc.io;
 
+import java.net.URI;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
+import org.apache.hadoop.filecache.DistributedCache;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
@@ -38,13 +41,15 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
+import org.apache.mahout.common.StringTuple;
+import org.apache.mahout.vectorizer.DocumentProcessor;
 
 import edu.indiana.d2i.htrc.HTRCConstants;
 import edu.indiana.d2i.htrc.util.Utilities;
 
-public class ParallelDataCopyJob extends Configured implements Tool {
+public class DataCopyTokenizerJob extends Configured implements Tool {
 	private static final Log logger = LogFactory
-			.getLog(ParallelDataCopyJob.class);
+			.getLog(DataCopyTokenizerJob.class);
 
 	private void printUsage() {
 		System.out.println("Bad input arguments!");
@@ -53,7 +58,7 @@ public class ParallelDataCopyJob extends Configured implements Tool {
 
 	@Override
 	public int run(String[] args) throws Exception {
-		if (args.length != 4) {
+		if (args.length != 5) {
 			printUsage();
 		}
 
@@ -61,17 +66,44 @@ public class ParallelDataCopyJob extends Configured implements Tool {
 		String outputPath = args[1];
 		int maxIdsPerSplit = Integer.valueOf(args[2]);
 		String dataAPIConfClassName = args[3];
+		String analyzerClassName = args[4];
+//		String dictionaryFile = args[5];
 
-		logger.info("ParallelDataCopyJob ");
+		logger.info("DataCopyTokenizerJob ");
 		logger.info(" - input: " + inputPath);
 		logger.info(" - output: " + outputPath);
 		logger.info(" - maxIdsPerSplit: " + maxIdsPerSplit);
 		logger.info(" - dataAPIConfClassName: " + dataAPIConfClassName);
-
+		logger.info(" - analyzerName: " + analyzerClassName);
+//		logger.info(" - dictionaryFile: " + dictionaryFile);
+		
+		// upload dictionary file to HDFS
+//		FileSystem fs = FileSystem.get(getConf());
+//		Path dictionaryPath = new Path(outputPath, Utilities.path2FileName(dictionaryFile));
+//		BufferedWriter writer = new BufferedWriter(
+//				new OutputStreamWriter(fs.create(dictionaryPath, true)));
+//		BufferedReader reader = new BufferedReader(new FileReader(dictionaryFile));
+//		String line = null;
+//		while ((line = reader.readLine()) != null) {
+//			writer.write(line + "\n");
+//		}
+//		writer.close();
+		
+		// 
 		Job job = new Job(getConf(),
-				"Copy data from HTRC data storage parallely.");
-		job.setJarByClass(ParallelDataCopyJob.class);
+				"Copy and tokenize data from HTRC data storage parallely.");
+		job.setJarByClass(DataCopyTokenizerJob.class);
 
+		// set analyzer
+//		Class<? extends Analyzer> analyzerClass = Class.forName(analyzerClassName).
+//				asSubclass(Analyzer.class);
+		job.getConfiguration().set(DocumentProcessor.ANALYZER_CLASS, analyzerClassName);
+		
+		// set distributed cache
+//		Path dictionaryPath = new Path(dictionaryFile);
+//		DistributedCache.setCacheFiles(new URI[] {dictionaryPath.toUri()}, job.getConfiguration());
+		
+		// set data api conf
 		job.getConfiguration().setInt(HTRCConstants.MAX_IDNUM_SPLIT,
 				maxIdsPerSplit);
 		Utilities.setDataAPIConf(job.getConfiguration(), dataAPIConfClassName);	
@@ -82,9 +114,9 @@ public class ParallelDataCopyJob extends Configured implements Tool {
 		job.setMapOutputKeyClass(Text.class);
 		job.setMapOutputValueClass(Text.class);
 		job.setOutputKeyClass(Text.class);
-		job.setOutputValueClass(Text.class);
+		job.setOutputValueClass(StringTuple.class);
 
-		job.setMapperClass(org.apache.hadoop.mapreduce.Mapper.class);
+		job.setMapperClass(DataCopyTokenizerMapper.class);
 		job.setNumReduceTasks(0);
 
 		FileInputFormat.setInputPaths(job, new Path(inputPath));
@@ -92,14 +124,14 @@ public class ParallelDataCopyJob extends Configured implements Tool {
 
 		long start = System.nanoTime();
 		job.waitForCompletion(true);
-		logger.info("ParallelDataCopyJob took " + (System.nanoTime()-start)/1e9 + " seconds.");
+		logger.info("DataCopyTokenizerJob took " + (System.nanoTime()-start)/1e9 + " seconds.");
 		
 		return 0;
 	}
 
 	public static void main(String[] args) throws Exception {
 		int res = ToolRunner.run(new Configuration(),
-				new ParallelDataCopyJob(), args);
+				new DataCopyTokenizerJob(), args);
 		System.exit(res);
 	}
 }

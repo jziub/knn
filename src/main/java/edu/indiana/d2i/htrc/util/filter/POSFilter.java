@@ -38,6 +38,7 @@ import opennlp.tools.postag.POSTaggerME;
 import org.apache.lucene.analysis.TokenFilter;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
+import org.apache.lucene.analysis.tokenattributes.TermAttribute;
 
 /**
  * Only works for English corpus
@@ -48,6 +49,7 @@ public class POSFilter extends TokenFilter {
 	private List<Pattern> patterns = new ArrayList<Pattern>();
 	
 	private POSTaggerME tagger = null;
+	private String[] sentence = new String[1];
 
 	protected POSFilter(TokenStream input, String[] regex) {
 		super(input);
@@ -78,9 +80,8 @@ public class POSFilter extends TokenFilter {
 		}
 	}
 
-	private boolean match(String token) {
+	private final boolean match(String token) {
 		// change to pos
-		String[] sentence = new String[1];
 		sentence[0] = token;
 		String[] pos = tagger.tag(sentence);
 
@@ -92,10 +93,17 @@ public class POSFilter extends TokenFilter {
 	}
 
 	@Override
-	public boolean incrementToken() throws IOException {
+	public boolean incrementToken() throws IOException {		
+		StringBuilder string = new StringBuilder();
 		while (input.incrementToken()) {
-			String token = new String(termAtt.buffer(), 0, termAtt.length());
-			if (match(token)) {
+			string.delete(0, string.length());
+			string.append(termAtt.buffer());			
+//			String token = new String(termAtt.buffer(), 0, termAtt.length());
+//			if (match(token)) {
+//				return true;
+//			}
+			
+			if (match(string.toString())) {
 				return true;
 			}
 		}

@@ -34,6 +34,7 @@ import edu.indiana.d2i.htrc.io.HTRCDataAPIClient;
 public class HTRCDataAPIClientTest {
 	public static void main(String[] args) throws Exception {
 		String url = "129-79-49-119.dhcp-bl.indiana.edu:25443";
+//		String url = "129.79.49.119.dhcp-bl.indiana.edu:25443";
 		String delimitor = "|";
 		String clientID = "yim";
 		String clientSecrete = "yim";
