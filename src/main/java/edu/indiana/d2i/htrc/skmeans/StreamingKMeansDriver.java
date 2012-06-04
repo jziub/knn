@@ -47,15 +47,11 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
-import org.apache.mahout.clustering.ClusterObservations;
-import org.apache.mahout.clustering.kmeans.Cluster;
-import org.apache.mahout.common.distance.DistanceMeasure;
 import org.apache.mahout.common.distance.EuclideanDistanceMeasure;
 import org.apache.mahout.knn.means.StreamingKmeans;
 import org.apache.mahout.math.MatrixSlice;
 import org.apache.mahout.math.VectorWritable;
 
-import edu.indiana.d2i.htrc.HTRCConstants;
 import edu.indiana.d2i.htrc.util.Utilities;
 
 public class StreamingKMeansDriver extends Configured implements Tool {

@@ -24,7 +24,7 @@
 # 
 */
 
-package edu.indiana.d2i.htrc.io;
+package edu.indiana.d2i.htrc.io.lib;
 
 import java.io.BufferedReader;
 import java.io.DataInputStream;

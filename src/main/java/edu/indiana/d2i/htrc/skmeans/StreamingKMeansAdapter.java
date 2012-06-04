@@ -80,8 +80,8 @@ public final class StreamingKMeansAdapter extends StreamingKmeans {
 			@Override
 			public UpdatableSearcher create() {
 				// (dimension, distance obj, 0 < #projections < 100, searchSize)
-//				return new ProjectionSearch(dim, measure, 8, 20);
-				return new Brute(measure);
+				return new ProjectionSearch(dim, measure, 8, 20);
+//				return new Brute(measure);
 			}
 		};
 		this.centroids = centroidFactory.create();

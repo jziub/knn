@@ -45,6 +45,7 @@ import org.apache.mahout.common.StringTuple;
 import org.apache.mahout.vectorizer.DocumentProcessor;
 
 import edu.indiana.d2i.htrc.HTRCConstants;
+import edu.indiana.d2i.htrc.io.lib.IDInputFormat;
 import edu.indiana.d2i.htrc.util.Utilities;
 
 public class DataCopyTokenizerJob extends Configured implements Tool {

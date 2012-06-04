@@ -24,7 +24,7 @@
 # 
 */
 
-package edu.indiana.d2i.htrc.io;
+package edu.indiana.d2i.htrc.io.lib;
 
 import java.io.IOException;
 import java.util.Iterator;
@@ -39,6 +39,8 @@ import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 
 import edu.indiana.d2i.htrc.HTRCConstants;
+import edu.indiana.d2i.htrc.io.HTRCDataAPIClient;
+import edu.indiana.d2i.htrc.io.HTRCDataAPIClient.Builder;
 import edu.indiana.d2i.htrc.util.Utilities;
 
 public class IDRecorderReader extends RecordReader<Text, Text> {

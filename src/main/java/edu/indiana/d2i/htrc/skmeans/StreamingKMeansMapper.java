@@ -39,25 +39,30 @@ import org.apache.mahout.knn.means.StreamingKmeans;
 import org.apache.mahout.knn.search.ProjectionSearch;
 import org.apache.mahout.knn.search.UpdatableSearcher;
 import org.apache.mahout.math.MatrixSlice;
+import org.apache.mahout.math.Vector;
 import org.apache.mahout.math.VectorWritable;
 
 import edu.indiana.d2i.htrc.HTRCConstants;
+import edu.indiana.d2i.htrc.vecproj.VectorProjectionIF;
 
 class StreamingKMeansMapper
 		extends
 		Mapper<WritableComparable<?>, VectorWritable, IntWritable, VectorWritable> {
 	private StreamingKMeansAdapter skmeans = null;
+	private VectorProjectionIF projector = null;
 
 	@Override
 	public void map(WritableComparable<?> key, VectorWritable value,
 			Context context) throws IOException, InterruptedException {
-		skmeans.cluster(value.get());
+//		skmeans.cluster(value.get());
+		
+		Vector vector = projector.project(value.get());
+		skmeans.cluster(vector);
 	}
 
 	@Override
 	protected void setup(Context context) throws IOException,
 			InterruptedException {
-		// ??????
 		skmeans = new StreamingKMeansAdapter(context.getConfiguration());
 	}
 
