@@ -76,6 +76,10 @@ public class ParallelDataCopyJob extends Configured implements Tool {
 				maxIdsPerSplit);
 		Utilities.setDataAPIConf(job.getConfiguration(), dataAPIConfClassName);	
 
+		// no speculation
+	    job.getConfiguration().setBoolean("mapred.map.tasks.speculative.execution", false);
+	    job.getConfiguration().setBoolean("mapred.reduce.tasks.speculative.execution", false);
+		
 		job.setInputFormatClass(IDInputFormat.class);
 		job.setOutputFormatClass(SequenceFileOutputFormat.class);
 

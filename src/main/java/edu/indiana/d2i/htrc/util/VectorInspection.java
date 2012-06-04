@@ -26,6 +26,8 @@
 
 package edu.indiana.d2i.htrc.util;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -53,6 +55,7 @@ public class VectorInspection extends Configured implements Tool {
 	@Override
 	public int run(String[] args) throws Exception {
 		String input = args[0];
+		String output = args[1];
 		
 		int numVector = 0;
 		Set<Integer> dimLst = new HashSet<Integer>();
@@ -63,12 +66,14 @@ public class VectorInspection extends Configured implements Tool {
 				Utilities.HIDDEN_FILE_FILTER);
 		Text key = new Text();
 		VectorWritable value = new VectorWritable();
+		BufferedWriter writer = new BufferedWriter(new FileWriter(output));
 		for (int i = 0; i < status.length; i++) {
 			SequenceFile.Reader seqReader = new SequenceFile.Reader(fs,
 					status[i].getPath(), conf);
 			while (seqReader.next(key, value)) {
 				numVector++;
 				dimLst.add(value.get().size());
+				writer.write(value.toString() + "\n");
 			}
 		}
 		
@@ -78,6 +83,8 @@ public class VectorInspection extends Configured implements Tool {
 		for (Integer dim : dimLst) 
 			builder.append(dim + " ");
 		logger.info("" + builder.toString());
+		
+		writer.close();
 		
 		return 0;
 	}

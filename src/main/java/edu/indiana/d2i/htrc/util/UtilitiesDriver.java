@@ -35,7 +35,8 @@ public class UtilitiesDriver {
 	    try {
 	    	pgd.addClass("inspectvector", VectorInspection.class, "inspect vector");
 	    	pgd.addClass("inspecttoken", TokensInspection.class, "inspect token");
-	    	pgd.addClass("datavalid", DataValidation.class, "validate copied data");
+	    	pgd.addClass("inspectcluster", ClusterInspection.class, "inspect cluster");
+	    	pgd.addClass("datavalid", DataCopyValidation.class, "validate copied data");
 	    	pgd.driver(args);
 	    	
 	    	// Success

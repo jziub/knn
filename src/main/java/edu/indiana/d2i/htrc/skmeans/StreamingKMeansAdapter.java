@@ -37,6 +37,7 @@ import org.apache.mahout.common.distance.DistanceMeasure;
 import org.apache.mahout.knn.Centroid;
 import org.apache.mahout.knn.WeightedVector;
 import org.apache.mahout.knn.means.StreamingKmeans;
+import org.apache.mahout.knn.search.Brute;
 import org.apache.mahout.knn.search.ProjectionSearch;
 import org.apache.mahout.knn.search.Searcher;
 import org.apache.mahout.knn.search.UpdatableSearcher;
@@ -79,7 +80,8 @@ public final class StreamingKMeansAdapter extends StreamingKmeans {
 			@Override
 			public UpdatableSearcher create() {
 				// (dimension, distance obj, 0 < #projections < 100, searchSize)
-				return new ProjectionSearch(dim, measure, 8, 20);
+//				return new ProjectionSearch(dim, measure, 8, 20);
+				return new Brute(measure);
 			}
 		};
 		this.centroids = centroidFactory.create();

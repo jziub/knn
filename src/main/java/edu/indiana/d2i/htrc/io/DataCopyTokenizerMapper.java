@@ -51,12 +51,17 @@ import org.apache.mahout.vectorizer.DocumentProcessor;
 public class DataCopyTokenizerMapper extends
 		Mapper<Text, Text, Text, StringTuple> {
 
-//	private Set<String> dictionary = new HashSet<String>();
 	private Analyzer analyzer;
+	private static enum DataCopyTokenizer {
+		numTERMS, CPUTIME
+	}
 
 	@Override
 	public void map(Text key, Text value, Context context) throws IOException,
 			InterruptedException {
+		int numTerms = 0;
+		long initCPU = System.currentTimeMillis();
+		
 		TokenStream stream = analyzer.reusableTokenStream(key.toString(),
 				new StringReader(value.toString()));
 		CharTermAttribute termAtt = stream
@@ -67,11 +72,14 @@ public class DataCopyTokenizerMapper extends
 			if (termAtt.length() > 0) {
 				String term = new String(termAtt.buffer(), 0, termAtt.length());
 				document.add(term);
-//				if (dictionary.contains(term))
-//					document.add(term);
+				numTerms++;
 			}
 		}
 		context.write(key, document);
+		
+		long elapsed = System.currentTimeMillis() - initCPU;
+		context.getCounter(DataCopyTokenizer.CPUTIME).increment(elapsed);
+		context.getCounter(DataCopyTokenizer.numTERMS).increment(numTerms);
 	}
 
 	@Override

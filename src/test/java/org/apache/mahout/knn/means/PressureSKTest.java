@@ -21,6 +21,7 @@ import com.google.common.collect.Lists;
 import org.apache.mahout.common.distance.EuclideanDistanceMeasure;
 import org.apache.mahout.knn.WeightedVector;
 import org.apache.mahout.knn.generate.MultiNormal;
+import org.apache.mahout.knn.search.Brute;
 import org.apache.mahout.knn.search.ProjectionSearch;
 import org.apache.mahout.knn.search.Searcher;
 import org.apache.mahout.knn.search.UpdatableSearcher;
@@ -76,7 +77,8 @@ public class PressureSKTest {
         Searcher r = new StreamingKmeans().cluster(data, 1000, new StreamingKmeans.CentroidFactory() {
             @Override
             public UpdatableSearcher create() {
-                return new ProjectionSearch(dim, distance, 8, 20);
+//                return new ProjectionSearch(dim, distance, 8, 20);
+            	return new Brute(distance);
             }
         });
         long t1 = System.currentTimeMillis();
