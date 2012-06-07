@@ -26,7 +26,6 @@
 
 package edu.indiana.d2i.htrc.vecproj;
 
-import static org.junit.Assert.*;
 import junit.framework.Assert;
 
 import org.apache.mahout.math.DenseVector;
@@ -39,7 +38,7 @@ import org.junit.Test;
 
 public class TestRandomProjection {
 
-	private int originalDim = 10000, reducedDim = 500;
+	private int originalDim = 100000, reducedDim = 500;
 	private VectorProjectionIF projector = null;
 	
 	private DoubleFunction random;
@@ -61,6 +60,7 @@ public class TestRandomProjection {
 
 	@Test
 	public void testProject() {
+		long t0 = System.nanoTime();
 		random = Functions.random();
 		for (int i = 0; i < 100; i++) { // test 100 times
 			DenseVector vector = new DenseVector(originalDim);
@@ -68,5 +68,7 @@ public class TestRandomProjection {
 			Vector projected = projector.project(vector);
 			Assert.assertEquals(reducedDim, projected.size());
 		}
+		long t1 = System.nanoTime();
+		System.out.println("elapsed " + ((double)(t1 - t0))/1e9);
 	}
 }

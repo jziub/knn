@@ -40,6 +40,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
+import org.apache.hadoop.mapreduce.Mapper.Context;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
@@ -52,16 +53,18 @@ public class DataCopyTokenizerMapper extends
 		Mapper<Text, Text, Text, StringTuple> {
 
 	private Analyzer analyzer;
+
 	private static enum DataCopyTokenizer {
 		numTERMS, CPUTIME
 	}
+	
+	private long elapsedTime = 0;
+	private long numTerms = 0;
 
 	@Override
 	public void map(Text key, Text value, Context context) throws IOException,
 			InterruptedException {
-		int numTerms = 0;
-		long initCPU = System.currentTimeMillis();
-		
+		long initCPU = System.nanoTime();
 		TokenStream stream = analyzer.reusableTokenStream(key.toString(),
 				new StringReader(value.toString()));
 		CharTermAttribute termAtt = stream
@@ -75,11 +78,9 @@ public class DataCopyTokenizerMapper extends
 				numTerms++;
 			}
 		}
+		elapsedTime += System.nanoTime() - initCPU;
+
 		context.write(key, document);
-		
-		long elapsed = System.currentTimeMillis() - initCPU;
-		context.getCounter(DataCopyTokenizer.CPUTIME).increment(elapsed);
-		context.getCounter(DataCopyTokenizer.numTERMS).increment(numTerms);
 	}
 
 	@Override
@@ -92,20 +93,27 @@ public class DataCopyTokenizerMapper extends
 						DocumentProcessor.ANALYZER_CLASS,
 						DefaultAnalyzer.class.getName()), Analyzer.class);
 
-//		Configuration conf = context.getConfiguration();
-//		URI[] localFiles = DistributedCache.getCacheFiles(conf);
-//		if (localFiles == null || localFiles.length == 0)
-//			throw new RuntimeException(
-//					"Cannot find paths from distribute cache.");
-//
-//		Path dictionaryFile = new Path(localFiles[0].getPath());
-//		FileSystem fs = FileSystem.get(conf);
-//		BufferedReader reader = new BufferedReader(new InputStreamReader(
-//				fs.open(dictionaryFile)));
-//		String term = null;
-//		while ((term = reader.readLine()) != null) {
-//			dictionary.add(term.toLowerCase());
-//		}
-//		reader.close();
+		// Configuration conf = context.getConfiguration();
+		// URI[] localFiles = DistributedCache.getCacheFiles(conf);
+		// if (localFiles == null || localFiles.length == 0)
+		// throw new RuntimeException(
+		// "Cannot find paths from distribute cache.");
+		//
+		// Path dictionaryFile = new Path(localFiles[0].getPath());
+		// FileSystem fs = FileSystem.get(conf);
+		// BufferedReader reader = new BufferedReader(new InputStreamReader(
+		// fs.open(dictionaryFile)));
+		// String term = null;
+		// while ((term = reader.readLine()) != null) {
+		// dictionary.add(term.toLowerCase());
+		// }
+		// reader.close();
+	}
+
+	@Override
+	protected void cleanup(Context context) throws IOException,
+			InterruptedException {
+		context.getCounter(DataCopyTokenizer.CPUTIME).increment(elapsedTime);
+		context.getCounter(DataCopyTokenizer.numTERMS).increment(numTerms);
 	}
 }

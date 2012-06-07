@@ -77,8 +77,8 @@ public class PressureSKTest {
         Searcher r = new StreamingKmeans().cluster(data, 1000, new StreamingKmeans.CentroidFactory() {
             @Override
             public UpdatableSearcher create() {
-//                return new ProjectionSearch(dim, distance, 8, 20);
-            	return new Brute(distance);
+                return new ProjectionSearch(dim, distance, 8, 2);
+//            	return new Brute(distance);
             }
         });
         long t1 = System.currentTimeMillis();

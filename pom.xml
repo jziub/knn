@@ -93,6 +93,18 @@
 			<version>1.1.1</version>
 		</dependency>
 
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-jdk14</artifactId>
+			<version>1.6.1</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<version>1.6.1</version>
+		</dependency>
+
 		<!-- opennlp -->
 		<dependency>
 			<groupId>org.apache.opennlp</groupId>
