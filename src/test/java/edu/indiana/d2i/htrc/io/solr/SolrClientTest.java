@@ -17,21 +17,48 @@
 # -----------------------------------------------------------------
 #
 # Project: knn
-# File:  DataAPIDefaultConf.java
+# File:  SolrClientTest.java
 # Description:  
 #
 # -----------------------------------------------------------------
 # 
 */
 
-package edu.indiana.d2i.htrc.io;
+package edu.indiana.d2i.htrc.io.solr;
 
-import org.apache.hadoop.conf.Configuration;
+import static org.junit.Assert.*;
 
-import edu.indiana.d2i.htrc.HTRCConstants;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
-public class DataAPIDefaultConf {
-	public void configurate(Configuration conf, int maxIdsPerReq) {
-		conf.setInt(HTRCConstants.MAX_ID_RETRIEVED, maxIdsPerReq);
+public class SolrClientTest {
+
+	private SolrClient client = null;
+	
+	@BeforeClass
+	public static void setUpBeforeClass() throws Exception {
 	}
+
+	@AfterClass
+	public static void tearDownAfterClass() throws Exception {
+	}
+
+	@Before
+	public void setUp() throws Exception {
+		client = new SolrClient("http://chinkapin.pti.indiana.edu:9994/solr/");
+	}
+
+	@After
+	public void tearDown() throws Exception {
+	}
+
+	@Test
+	public void testGetTermVectors() {
+		String[] ids = new String[]{"miua.5402120,0001,001"};
+		client.getTermVectors(ids);
+	}
+
 }

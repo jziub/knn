@@ -45,4 +45,6 @@ public class HTRCConstants {
 	
 	// analyzer
 //	public static String ANALYZER_CLASS = "htrc.analyzer.class";
+	
+	public static String SOLR_DELIMITOR = "|";
 }

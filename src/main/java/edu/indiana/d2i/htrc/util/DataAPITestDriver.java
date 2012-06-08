@@ -17,7 +17,7 @@
 # -----------------------------------------------------------------
 #
 # Project: knn
-# File:  DataValidation.java
+# File:  VectorInspection.java
 # Description:  
 #
 # -----------------------------------------------------------------
@@ -26,8 +26,13 @@
 
 package edu.indiana.d2i.htrc.util;
 
-import java.util.Iterator;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -40,66 +45,53 @@ import org.apache.hadoop.io.SequenceFile;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
+import org.apache.mahout.math.VectorWritable;
 
 import edu.indiana.d2i.htrc.HTRCConstants;
 import edu.indiana.d2i.htrc.io.lib.HTRCDataAPIClient;
 
-public class DataCopyValidation extends Configured implements Tool {
-private static final Log logger = LogFactory.getLog(DataCopyValidation.class);
+/**
+ * It is used to inspect the vectors after transformation of text or cluster result 
+ */
+public class DataAPITestDriver extends Configured implements Tool {
+	private static final Log logger = LogFactory.getLog(DataAPITestDriver.class);
 	
 	@Override
 	public int run(String[] args) throws Exception {
-		Configuration conf = getConf();
+		String dataAPIConfClassName = args[0];
+		int maxIdsPerReq = Integer.valueOf(args[1]);
+		String queryStr = args[2];
 		
-		String outputPath = args[0]; // result
-		String dataAPIConfClassName = args[1];
-		int maxIdsPerReq = Integer.valueOf(args[2]);
-		
-		logger.info("DataValidation ");
-		logger.info(" - output: " + outputPath);
-		logger.info(" - dataAPIConfClassName: " + dataAPIConfClassName);
-		logger.info(" - maxIdsPerReq: " + maxIdsPerReq);
-		
+		Configuration conf  = getConf();
 		Utilities.setDataAPIConf(conf, dataAPIConfClassName, maxIdsPerReq);
-
-//		HTRCDataAPIClient client = Utilities.creatDataAPIClient(conf);
-		String dataEPR = conf.get(HTRCConstants.HOSTS_SEPARATEDBY_COMMA, 
-				"https://129-79-49-119.dhcp-bl.indiana.edu:25443/data-api");
+		
+		int maxIdRetrieved = conf.getInt(HTRCConstants.MAX_ID_RETRIEVED, 100);
+		String dataEPR = conf.get(HTRCConstants.HOSTS_SEPARATEDBY_COMMA).split(",")[0];
 		String delimitor = conf.get(HTRCConstants.DATA_API_URL_DELIMITOR, "|");
 		String clientID = conf.get(HTRCConstants.DATA_API_CLIENTID, "yim");
 		String clientSecrete = conf.get(HTRCConstants.DATA_API_CLIENTSECRETE, "yim");
 		String tokenLoc = conf.get(HTRCConstants.DATA_API_TOKENLOC, "https://129-79-49-119.dhcp-bl.indiana.edu:25443/oauth2/token?grant_type=client_credentials");
 		boolean selfsigned = conf.getBoolean(HTRCConstants.DATA_API_SELFSIGNED, true);
-		HTRCDataAPIClient client = new HTRCDataAPIClient.Builder(dataEPR, delimitor)
-		.authentication(true).selfsigned(selfsigned).clientID(clientID)
-		.clientSecrete(clientSecrete).tokenLocation(tokenLoc).build();
-
-		FileSystem fs = FileSystem.get(conf);
-		FileStatus[] status = fs.listStatus(new Path(outputPath), Utilities.HIDDEN_FILE_FILTER);
-		Text key = new Text();
-		Text value = new Text();
-		for (int i = 0; i < status.length; i++) {
-			SequenceFile.Reader seqReader = new SequenceFile.Reader(
-					fs, status[i].getPath(), conf);
-			while (seqReader.next(key, value)) {
-//				logger.info(key.toString());
-				Iterable<Entry<String, String>> content = 
-						client.getID2Content(key.toString());
-				Iterator<Entry<String, String>> iterator = content.iterator();
-				Entry<String, String> entry = iterator.next();
-				if (!entry.getValue().equals(value.toString())) {
-					logger.error("Book : " + key.toString() + " corrupts!");
-				}
-			}
+		
+		if (dataEPR.equals(HTRCConstants.DATA_API_DEFAULT_URL)) {
+			dataEPR = HTRCConstants.DATA_API_DEFAULT_URL_PREFIX + dataEPR;
 		}
 		
-		logger.info("Finish validation.");
-
+		HTRCDataAPIClient dataClient = new HTRCDataAPIClient.Builder(dataEPR, delimitor)
+		.authentication(true).selfsigned(selfsigned).clientID(clientID)
+		.clientSecrete(clientSecrete).tokenLocation(tokenLoc).build();
+		
+//		String queryStr = "yale.39002052249902|uc2.ark:/13960/t88g8h13f|uc2.ark:/13960/t6sx67388|uc2.ark:/13960/t5j96547r|uc2.ark:/13960/t6ww79z3v|yale.39002085406669|miua.4918260.0305.001|uc2.ark:/13960/t3416xb23|uc2.ark:/13960/t86h4mv25|loc.ark:/13960/t2k64mv58|";
+		Iterable<Entry<String, String>> entries = dataClient.getID2Content(queryStr);
+		for (Entry<String, String> entry : entries) {
+			System.out.println(entry.getKey());
+		}
+		
 		return 0;
 	}
 
 	public static void main(String[] args) throws Exception {
-		int res = ToolRunner.run(new Configuration(), new DataCopyValidation(), args);
-		System.exit(res);
+		ToolRunner.run(new Configuration(), new DataAPITestDriver(), args);
+		System.exit(0);
 	}
 }

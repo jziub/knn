@@ -35,7 +35,7 @@ import org.apache.hadoop.util.ReflectionUtils;
 
 import edu.indiana.d2i.htrc.HTRCConstants;
 import edu.indiana.d2i.htrc.io.DataAPIDefaultConf;
-import edu.indiana.d2i.htrc.io.HTRCDataAPIClient;
+import edu.indiana.d2i.htrc.io.lib.HTRCDataAPIClient;
 
 public class Utilities {
 	private static final Log logger = LogFactory.getLog(Utilities.class);
@@ -73,11 +73,11 @@ public class Utilities {
 		}
 	};
 	
-	public static void setDataAPIConf(Configuration conf, String dataAPIConfClassName) throws ClassNotFoundException {
+	public static void setDataAPIConf(Configuration conf, String dataAPIConfClassName, int maxIdsPerReq) throws ClassNotFoundException {
 		Class<?> dataAPIConfClass = Class.forName(dataAPIConfClassName);
 		DataAPIDefaultConf confInstance = (DataAPIDefaultConf) ReflectionUtils
 				.newInstance(dataAPIConfClass, conf);
-		confInstance.configurate(conf);
+		confInstance.configurate(conf, maxIdsPerReq);
 		
 		logger.info("Data API configuration");
 		logger.info(" - host: " + conf.get(HTRCConstants.HOSTS_SEPARATEDBY_COMMA, 

@@ -32,8 +32,9 @@ import edu.indiana.d2i.htrc.HTRCConstants;
 
 public class DataAPISilvermapleConf extends DataAPIDefaultConf {
 	@Override
-	public void configurate(Configuration conf) {
-		conf.setInt(HTRCConstants.MAX_ID_RETRIEVED, 100);
+	public void configurate(Configuration conf, int maxIdsPerReq) {
+//		conf.setInt(HTRCConstants.MAX_ID_RETRIEVED, 100);
+		conf.setInt(HTRCConstants.MAX_ID_RETRIEVED, maxIdsPerReq);
 		
 		conf.set(HTRCConstants.DATA_API_URL_DELIMITOR, "|");
 		conf.set(HTRCConstants.DATA_API_CLIENTID, "drhtrc");

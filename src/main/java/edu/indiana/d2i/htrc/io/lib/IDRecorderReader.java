@@ -39,8 +39,7 @@ import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 
 import edu.indiana.d2i.htrc.HTRCConstants;
-import edu.indiana.d2i.htrc.io.HTRCDataAPIClient;
-import edu.indiana.d2i.htrc.io.HTRCDataAPIClient.Builder;
+import edu.indiana.d2i.htrc.io.lib.HTRCDataAPIClient.Builder;
 import edu.indiana.d2i.htrc.util.Utilities;
 
 public class IDRecorderReader extends RecordReader<Text, Text> {
@@ -75,8 +74,18 @@ public class IDRecorderReader extends RecordReader<Text, Text> {
 		if (strBuilder.length() > 0) {
 			Iterable<Entry<String, String>> content = 
 					dataClient.getID2Content(strBuilder.toString());
-			return (content == null) ? null: content.iterator();
+//			return (content == null) ? null: content.iterator();
+			if (content != null) {
+				return content.iterator();
+			} else {
+				logger.info("content is null!!! " + strBuilder.toString());
+				logger.info("numIdProcessed: " + numIdProcessed + ", remained: " + (split.getLength()-numIdProcessed));
+				return null;
+			}
+				
 		} else {
+			logger.info("strBuilder.length() " + strBuilder.length());
+			logger.info("numIdProcessed: " + numIdProcessed + ", remained: " + (split.getLength()-numIdProcessed));
 			return null;
 		}
 	}
@@ -107,6 +116,8 @@ public class IDRecorderReader extends RecordReader<Text, Text> {
 			throws IOException, InterruptedException {
 		split = (IDInputSplit) inputSplit;
 		iditerator = split.getIDIterator();
+		
+		logger.info("split has " + split.getLength() + " books");
 		
 		conf = taskAttemptContext.getConfiguration();
 		maxIdRetrieved = conf.getInt(HTRCConstants.MAX_ID_RETRIEVED, 100);

@@ -54,7 +54,7 @@ public class ParallelDataCopyJob extends Configured implements Tool {
 
 	@Override
 	public int run(String[] args) throws Exception {
-		if (args.length != 4) {
+		if (args.length != 5) {
 			printUsage();
 		}
 
@@ -62,6 +62,7 @@ public class ParallelDataCopyJob extends Configured implements Tool {
 		String outputPath = args[1];
 		int maxIdsPerSplit = Integer.valueOf(args[2]);
 		String dataAPIConfClassName = args[3];
+		int maxIdsPerReq = Integer.valueOf(args[4]);
 
 		logger.info("ParallelDataCopyJob ");
 		logger.info(" - input: " + inputPath);
@@ -75,7 +76,7 @@ public class ParallelDataCopyJob extends Configured implements Tool {
 
 		job.getConfiguration().setInt(HTRCConstants.MAX_IDNUM_SPLIT,
 				maxIdsPerSplit);
-		Utilities.setDataAPIConf(job.getConfiguration(), dataAPIConfClassName);	
+		Utilities.setDataAPIConf(job.getConfiguration(), dataAPIConfClassName, maxIdsPerReq);	
 
 		// no speculation
 	    job.getConfiguration().setBoolean("mapred.map.tasks.speculative.execution", false);

@@ -59,7 +59,7 @@ public class DataCopyTokenizerJob extends Configured implements Tool {
 
 	@Override
 	public int run(String[] args) throws Exception {
-		if (args.length != 5) {
+		if (args.length != 6) {
 			printUsage();
 		}
 
@@ -68,7 +68,7 @@ public class DataCopyTokenizerJob extends Configured implements Tool {
 		int maxIdsPerSplit = Integer.valueOf(args[2]);
 		String dataAPIConfClassName = args[3];
 		String analyzerClassName = args[4];
-//		String dictionaryFile = args[5];
+		int maxIdsPerReq = Integer.valueOf(args[5]);
 
 		logger.info("DataCopyTokenizerJob ");
 		logger.info(" - input: " + inputPath);
@@ -76,7 +76,7 @@ public class DataCopyTokenizerJob extends Configured implements Tool {
 		logger.info(" - maxIdsPerSplit: " + maxIdsPerSplit);
 		logger.info(" - dataAPIConfClassName: " + dataAPIConfClassName);
 		logger.info(" - analyzerName: " + analyzerClassName);
-//		logger.info(" - dictionaryFile: " + dictionaryFile);
+		logger.info(" - maxIdsPerReq: " + maxIdsPerReq);
 		
 		// upload dictionary file to HDFS
 //		FileSystem fs = FileSystem.get(getConf());
@@ -107,7 +107,7 @@ public class DataCopyTokenizerJob extends Configured implements Tool {
 		// set data api conf
 		job.getConfiguration().setInt(HTRCConstants.MAX_IDNUM_SPLIT,
 				maxIdsPerSplit);
-		Utilities.setDataAPIConf(job.getConfiguration(), dataAPIConfClassName);	
+		Utilities.setDataAPIConf(job.getConfiguration(), dataAPIConfClassName, maxIdsPerReq);	
 
 		// no speculation
 	    job.getConfiguration().setBoolean("mapred.map.tasks.speculative.execution", false);

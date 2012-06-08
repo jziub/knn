@@ -17,21 +17,28 @@
 # -----------------------------------------------------------------
 #
 # Project: knn
-# File:  DataAPIDefaultConf.java
+# File:  TermVector.java
 # Description:  
 #
 # -----------------------------------------------------------------
 # 
 */
 
-package edu.indiana.d2i.htrc.io;
+package edu.indiana.d2i.htrc.io.solr;
 
-import org.apache.hadoop.conf.Configuration;
+import java.util.HashMap;
+import java.util.Map;
 
-import edu.indiana.d2i.htrc.HTRCConstants;
-
-public class DataAPIDefaultConf {
-	public void configurate(Configuration conf, int maxIdsPerReq) {
-		conf.setInt(HTRCConstants.MAX_ID_RETRIEVED, maxIdsPerReq);
+public class SolrTermVector {
+	private String volumeID;
+	private Map<String, Integer> termVector;
+	
+	public SolrTermVector(String volumeID) {
+		this.volumeID = volumeID;
+		termVector = new HashMap<String, Integer>();
+	}
+	
+	public void addTerm(String term, int tf) {
+		termVector.put(term, Integer.valueOf(tf));
 	}
 }

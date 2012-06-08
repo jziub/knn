@@ -1,4 +1,4 @@
-package edu.indiana.d2i.htrc.io;
+package edu.indiana.d2i.htrc.io.lib;
 
 import edu.indiana.d2i.htrc.HTRCConstants;
 import gov.loc.repository.pairtree.Pairtree;
@@ -30,6 +30,8 @@ import org.apache.amber.oauth2.client.request.OAuthClientRequest;
 import org.apache.amber.oauth2.client.request.OAuthClientRequest.TokenRequestBuilder;
 import org.apache.amber.oauth2.client.response.OAuthAccessTokenResponse;
 import org.apache.amber.oauth2.common.message.types.GrantType;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 public class HTRCDataAPIClient {
 	private final int BUFFER = 2048;
@@ -48,6 +50,8 @@ public class HTRCDataAPIClient {
 	private static String token = null;
 	
 	private HttpsURLConnection httpsURLConnection = null;
+	
+	private static final Log logger = LogFactory.getLog(HTRCDataAPIClient.class);
 	
 	// ssl stuffs
 	SSLContext sslContext = null;
@@ -185,8 +189,8 @@ public class HTRCDataAPIClient {
 			ZipInputStream zipinput = new ZipInputStream(inputStream);
 			return new ID2ContentEntry(zipinput);
 		} else {
-			System.err.println(httpsURLConnection.getResponseCode());
-			return null;
+			logger.fatal(queryStr + " leads to fatal.");
+			throw new RuntimeException("Https connection is rejected, code " + httpsURLConnection.getResponseCode());
 		}
 	}
 	
