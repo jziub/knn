@@ -43,7 +43,7 @@ import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 import org.apache.mahout.utils.io.ChunkedWriter;
 
-import edu.indiana.d2i.htrc.io.lib.HTRCDataAPIClient;
+import edu.indiana.d2i.htrc.io.dataapi.HTRCDataAPIClient;
 import edu.indiana.d2i.htrc.util.Utilities;
 
 public class SequentialDataCopyJob extends Configured implements Tool {

@@ -28,11 +28,14 @@ package edu.indiana.d2i.htrc.io.solr;
 
 import static org.junit.Assert.*;
 
+import org.apache.hadoop.conf.Configuration;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import edu.indiana.d2i.htrc.HTRCConstants;
 
 public class SolrClientTest {
 
@@ -48,7 +51,10 @@ public class SolrClientTest {
 
 	@Before
 	public void setUp() throws Exception {
-		client = new SolrClient("http://chinkapin.pti.indiana.edu:9994/solr/");
+		Configuration conf = new Configuration();
+		conf.set(HTRCConstants.SOLR_TV_URL, "http://chinkapin.pti.indiana.edu:9994/solr/");
+		conf.set(HTRCConstants.DICTIONARY_PATH, "./src/main/resources/dictionary-seq.txt");
+		client = new SolrClient(conf);
 	}
 
 	@After
@@ -57,7 +63,7 @@ public class SolrClientTest {
 
 	@Test
 	public void testGetTermVectors() {
-		String[] ids = new String[]{"miua.5402120,0001,001"};
+		String[] ids = new String[]{"nnc2.ark+=13960=t0ns1hd2j"};
 		client.getTermVectors(ids);
 	}
 

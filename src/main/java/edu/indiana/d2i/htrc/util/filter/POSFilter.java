@@ -38,7 +38,6 @@ import opennlp.tools.postag.POSTaggerME;
 import org.apache.lucene.analysis.TokenFilter;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
-import org.apache.lucene.analysis.tokenattributes.TermAttribute;
 
 /**
  * Only works for English corpus

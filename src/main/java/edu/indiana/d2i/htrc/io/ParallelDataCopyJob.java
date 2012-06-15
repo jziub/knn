@@ -40,7 +40,7 @@ import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 
 import edu.indiana.d2i.htrc.HTRCConstants;
-import edu.indiana.d2i.htrc.io.lib.IDInputFormat;
+import edu.indiana.d2i.htrc.io.dataapi.IDInputFormat;
 import edu.indiana.d2i.htrc.util.Utilities;
 
 public class ParallelDataCopyJob extends Configured implements Tool {

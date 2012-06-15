@@ -54,10 +54,10 @@ class StreamingKMeansMapper
 	@Override
 	public void map(WritableComparable<?> key, VectorWritable value,
 			Context context) throws IOException, InterruptedException {
-//		skmeans.cluster(value.get());
+		skmeans.cluster(value.get());
 		
-		Vector vector = projector.project(value.get());
-		skmeans.cluster(vector);
+//		Vector vector = projector.project(value.get());
+//		skmeans.cluster(vector);
 	}
 
 	@Override

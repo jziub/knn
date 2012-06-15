@@ -42,7 +42,7 @@ import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 
 import edu.indiana.d2i.htrc.HTRCConstants;
-import edu.indiana.d2i.htrc.io.lib.HTRCDataAPIClient;
+import edu.indiana.d2i.htrc.io.dataapi.HTRCDataAPIClient;
 
 public class DataCopyValidation extends Configured implements Tool {
 private static final Log logger = LogFactory.getLog(DataCopyValidation.class);

@@ -29,7 +29,7 @@ package edu.indiana.d2i.htrc;
 import java.util.Iterator;
 import java.util.Map.Entry;
 
-import edu.indiana.d2i.htrc.io.lib.HTRCDataAPIClient;
+import edu.indiana.d2i.htrc.io.dataapi.HTRCDataAPIClient;
 
 public class HTRCDataAPIClientTest {
 	public static void main(String[] args) throws Exception {

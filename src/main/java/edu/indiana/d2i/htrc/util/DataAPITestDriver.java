@@ -48,7 +48,7 @@ import org.apache.hadoop.util.ToolRunner;
 import org.apache.mahout.math.VectorWritable;
 
 import edu.indiana.d2i.htrc.HTRCConstants;
-import edu.indiana.d2i.htrc.io.lib.HTRCDataAPIClient;
+import edu.indiana.d2i.htrc.io.dataapi.HTRCDataAPIClient;
 
 /**
  * It is used to inspect the vectors after transformation of text or cluster result 

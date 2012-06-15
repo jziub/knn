@@ -41,7 +41,7 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 
-import edu.indiana.d2i.htrc.io.lib.HTRCDataAPIClient;
+import edu.indiana.d2i.htrc.io.dataapi.HTRCDataAPIClient;
 import edu.indiana.d2i.htrc.util.Utilities;
 
 public class DataCopyJobTest extends Configured implements Tool {

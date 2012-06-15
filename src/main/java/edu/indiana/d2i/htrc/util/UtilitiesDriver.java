@@ -38,6 +38,9 @@ public class UtilitiesDriver {
 	    	pgd.addClass("inspectcluster", ClusterInspection.class, "inspect cluster");
 	    	pgd.addClass("datavalid", DataCopyValidation.class, "validate copied data");
 	    	pgd.addClass("dataapitest", DataAPITestDriver.class, "test data api");
+	    	pgd.addClass("idvalid", IDValidation.class, "validate id list");
+	    	pgd.addClass("dict", DictionaryCreate.class, "create dictionary");
+	    	pgd.addClass("lucene", TestLuceneClient.class, "test lucene client");
 	    	pgd.driver(args);
 	    	
 	    	// Success

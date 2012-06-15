@@ -80,7 +80,8 @@ public final class StreamingKMeansAdapter extends StreamingKmeans {
 			@Override
 			public UpdatableSearcher create() {
 				// (dimension, distance obj, 0 < #projections < 100, searchSize)
-				return new ProjectionSearch(dim, measure, 8, 20);
+//				return new ProjectionSearch(dim, measure, 8, 20);
+				return new ProjectionSearch(dim, measure, 1, 2);
 //				return new Brute(measure);
 			}
 		};
@@ -120,9 +121,11 @@ public final class StreamingKMeansAdapter extends StreamingKmeans {
 		if (centroids.size() > maxClusters) {
             maxClusters = (int) Math.max(maxClusters, 10 * Math.log(numCluster));
             // TODO does shuffling help?
-            List<MatrixSlice> shuffled = Lists.newArrayList(centroids);
-            Collections.shuffle(shuffled);
-            centroids = clusterInternal(shuffled, maxClusters, 1, centroidFactory);
+//            List<MatrixSlice> shuffled = Lists.newArrayList(centroids);
+//            Collections.shuffle(shuffled);
+//            centroids = clusterInternal(shuffled, maxClusters, 1, centroidFactory);
+            
+            centroids = clusterInternal(centroids, maxClusters, 1, centroidFactory);
 
             // in the original algorithm, with distributions with sharp scale effects, the
             // distanceCutoff can grow to excessive size leading sub-clustering to collapse
