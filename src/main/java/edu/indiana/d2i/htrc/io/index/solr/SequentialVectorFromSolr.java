@@ -72,10 +72,11 @@ public class SequentialVectorFromSolr extends Configured implements Tool {
 		logger.info(" - outputFile: " + outputFile); // on HDFS
 		
 		Configuration conf = getConf();
-		conf.set(HTRCConstants.SOLR_TV_URL, solrURL);
+//		conf.set(HTRCConstants.SOLR_MAIN_URL, solrURL);
+		conf.set("htrc.solr.url", solrURL);
 		conf.set(HTRCConstants.DICTIONARY_PATH, dictionaryFile);
 		
-		SolrClient client = new SolrClient(conf);
+		SolrClient client = new SolrClient(conf, true);
 		FileSystem fs = FileSystem.get(conf);
 		
 		SequenceFile.Writer writer = new SequenceFile.Writer(fs, conf,

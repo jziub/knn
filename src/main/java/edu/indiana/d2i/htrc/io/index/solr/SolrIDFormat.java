@@ -37,12 +37,13 @@ import org.apache.mahout.math.VectorWritable;
 
 import edu.indiana.d2i.htrc.io.dataapi.IDInputFormat;
 import edu.indiana.d2i.htrc.io.dataapi.IDRecorderReader;
+import edu.indiana.d2i.htrc.io.index.lucene.LuceneIDFormat;
 
-public class SolrIDFormat extends IDInputFormat {
+public class SolrIDFormat extends LuceneIDFormat {
 	
 	@Override
 	public RecordReader<Text, VectorWritable> createRecordReader(InputSplit arg0,
 			TaskAttemptContext arg1) throws IOException, InterruptedException {
-		return new SolrIDRecordReader();
+		return new SolrRecordReader();
 	}
 }

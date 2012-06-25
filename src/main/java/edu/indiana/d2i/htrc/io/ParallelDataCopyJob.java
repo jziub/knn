@@ -65,7 +65,7 @@ public class ParallelDataCopyJob extends Configured implements Tool {
 		int maxIdsPerReq = Integer.valueOf(args[4]);
 
 		logger.info("ParallelDataCopyJob ");
-		logger.info(" - input: " + inputPath);
+		logger.info(" - input: " + inputPath); // id list
 		logger.info(" - output: " + outputPath);
 		logger.info(" - maxIdsPerSplit: " + maxIdsPerSplit);
 		logger.info(" - dataAPIConfClassName: " + dataAPIConfClassName);

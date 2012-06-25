@@ -48,7 +48,7 @@ public class HTRCConstants {
 
 	//
 	public static String SOLR_DELIMITOR = "|";
-	public static String SOLR_TV_URL = "htrc.solr.url";
+	public static String SOLR_MAIN_URL = "htrc.solr.url";
 	public static String DICTIONARY_PATH = "htrc.solr.dictionary";
 
 	// lucene

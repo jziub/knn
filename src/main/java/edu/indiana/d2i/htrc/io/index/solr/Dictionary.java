@@ -72,30 +72,11 @@ public class Dictionary {
 		reader.close();
 	} 	
 	
-	public Dictionary(String dicionaryPath) throws IOException {
-		// load dictionary file
-		// Path dictionaryFile = new Path(dicionaryPath);
-		// for (Pair<Writable, IntWritable> record : new
-		// SequenceFileIterable<Writable, IntWritable>(
-		// dictionaryFile, true, new Configuration())) {
-		// dictionary.put(record.getFirst().toString(), record.getSecond()
-		// .get());
-		// }
-
-		Configuration conf = new Configuration();
-		SequenceFile.Reader reader = new SequenceFile.Reader(
-				FileSystem.get(conf), new Path(dicionaryPath), conf);
-		Text key = new Text();
-		IntWritable value = new IntWritable();
-		while (reader.next(key, value)) {
-			dictionary.put(key.toString(), value.get());
-		}
-		reader.close();
-	}
-	
 	public Dictionary(Configuration conf) throws IOException {
 //		String dicionaryPath = conf.get(HTRCConstants.DICTIONARY_PATH);
 		String dicionaryPath = conf.get("htrc.solr.dictionary");
+		
+		System.out.println("!!!dicionaryPath " + dicionaryPath);
 		
 		SequenceFile.Reader reader = new SequenceFile.Reader(
 				FileSystem.get(conf), new Path(dicionaryPath), conf);

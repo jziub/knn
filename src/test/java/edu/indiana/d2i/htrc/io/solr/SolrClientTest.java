@@ -28,7 +28,10 @@ package edu.indiana.d2i.htrc.io.solr;
 
 import static org.junit.Assert.*;
 
+import java.util.List;
+
 import org.apache.hadoop.conf.Configuration;
+import org.apache.mahout.math.NamedVector;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -36,6 +39,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import edu.indiana.d2i.htrc.HTRCConstants;
+import edu.indiana.d2i.htrc.io.index.solr.SolrClient;
 
 public class SolrClientTest {
 
@@ -52,9 +56,9 @@ public class SolrClientTest {
 	@Before
 	public void setUp() throws Exception {
 		Configuration conf = new Configuration();
-		conf.set(HTRCConstants.SOLR_TV_URL, "http://chinkapin.pti.indiana.edu:9994/solr/");
+		conf.set(HTRCConstants.SOLR_MAIN_URL, "http://coffeetree.cs.indiana.edu:9994/solr/");
 		conf.set(HTRCConstants.DICTIONARY_PATH, "./src/main/resources/dictionary-seq.txt");
-		client = new SolrClient(conf);
+		client = new SolrClient(conf, true);
 	}
 
 	@After
@@ -63,8 +67,24 @@ public class SolrClientTest {
 
 	@Test
 	public void testGetTermVectors() {
-		String[] ids = new String[]{"nnc2.ark+=13960=t0ns1hd2j"};
-		client.getTermVectors(ids);
+//		String[] ids = new String[]{"mdp.39015024031794"};
+//		Iterable<NamedVector> tv = client.getTermVectors(ids);
+//		for (NamedVector namedVector : tv) {
+//			System.out.println(namedVector);
+//		}
+//		System.out.println("done");
+		
+		List<String> idList = client.getIDList("*:*");
+		System.out.println(idList.size());
+		
+		for (String id : idList) {
+			String[] ids = new String[1];
+			ids[0] = id;
+			client.getTermVectors(ids);
+		}
+		
+		System.out.println("Done");
+		
 	}
 
 }

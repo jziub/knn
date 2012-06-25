@@ -96,8 +96,6 @@ public class DataCopyTokenizerJob extends Configured implements Tool {
 		job.setJarByClass(DataCopyTokenizerJob.class);
 
 		// set analyzer
-//		Class<? extends Analyzer> analyzerClass = Class.forName(analyzerClassName).
-//				asSubclass(Analyzer.class);
 		job.getConfiguration().set(DocumentProcessor.ANALYZER_CLASS, analyzerClassName);
 		
 		// set distributed cache
