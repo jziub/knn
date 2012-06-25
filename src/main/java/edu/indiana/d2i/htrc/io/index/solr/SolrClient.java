@@ -27,6 +27,7 @@
 package edu.indiana.d2i.htrc.io.index.solr;
 
 import edu.indiana.d2i.htrc.HTRCConstants;
+import edu.indiana.d2i.htrc.io.index.Dictionary;
 import edu.indiana.d2i.htrc.io.index.filter.DictionaryFilter;
 import edu.indiana.d2i.htrc.io.index.filter.FrequencyFilter;
 import edu.indiana.d2i.htrc.io.index.filter.HTRCFilter;

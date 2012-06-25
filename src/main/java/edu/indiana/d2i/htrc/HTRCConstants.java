@@ -57,4 +57,9 @@ public class HTRCConstants {
 	// filter
 	public static String FILTER_WORD_MIN_FREQUENCE = "htrc.lucene.filter.min.word.freq";
 	public static String FILTER_WORD_MIN_LENGTH = "htrc.lucene.filter.min.word.length";
+	
+	// memcache
+	public static String MEMCACHED_MAX_EXPIRE = "htrc.memcached.expire.max";
+	public static String MEMCACHED_CLIENT_NUM = "htrc.memcached.client.num";
+	public static String MEMCACHED_HOSTS = "htrc.memcached.hosts";
 }

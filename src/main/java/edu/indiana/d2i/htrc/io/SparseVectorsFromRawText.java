@@ -54,12 +54,12 @@ import org.apache.mahout.vectorizer.DocumentProcessor;
 
 import edu.indiana.d2i.htrc.HTRCConstants;
 import edu.indiana.d2i.htrc.io.dataapi.IDInputFormat;
+import edu.indiana.d2i.htrc.io.index.Dictionary;
 import edu.indiana.d2i.htrc.io.index.filter.DictionaryFilter;
 import edu.indiana.d2i.htrc.io.index.filter.FrequencyFilter;
 import edu.indiana.d2i.htrc.io.index.filter.HTRCFilter;
 import edu.indiana.d2i.htrc.io.index.filter.StopWordFilter;
 import edu.indiana.d2i.htrc.io.index.filter.WordLengthFilter;
-import edu.indiana.d2i.htrc.io.index.solr.Dictionary;
 import edu.indiana.d2i.htrc.util.Utilities;
 
 /**

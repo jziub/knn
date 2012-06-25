@@ -26,7 +26,7 @@
 
 package edu.indiana.d2i.htrc.io.index.filter;
 
-import edu.indiana.d2i.htrc.io.index.solr.Dictionary;
+import edu.indiana.d2i.htrc.io.index.Dictionary;
 
 public class DictionaryFilter extends HTRCFilter {
 

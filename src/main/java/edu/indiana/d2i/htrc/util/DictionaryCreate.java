@@ -51,7 +51,7 @@ import org.apache.mahout.math.VectorWritable;
 
 import edu.indiana.d2i.htrc.HTRCConstants;
 import edu.indiana.d2i.htrc.io.dataapi.HTRCDataAPIClient;
-import edu.indiana.d2i.htrc.io.index.solr.Dictionary;
+import edu.indiana.d2i.htrc.io.index.Dictionary;
 
 /**
  * It is used to inspect the vectors after transformation of text or cluster result 
