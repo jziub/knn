@@ -22,7 +22,7 @@
 #
 # -----------------------------------------------------------------
 # 
-*/
+ */
 
 package edu.indiana.d2i.htrc.io.mem;
 
@@ -33,7 +33,7 @@ import java.util.List;
 import net.spy.memcached.transcoders.Transcoder;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.io.Text;
+import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapreduce.RecordWriter;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.mahout.math.VectorWritable;
@@ -41,23 +41,27 @@ import org.apache.mahout.math.VectorWritable;
 import edu.indiana.d2i.htrc.HTRCConstants;
 
 // should change hard code class
-public class MemCachedRecordWriter extends RecordWriter<Text, VectorWritable> {
+public class MemCachedRecordWriter<K extends Writable, V extends Writable> extends RecordWriter<K, V> {
 
 	private ThreadedMemcachedClient client = null;
-	private Transcoder<VectorWritable> transcoder = null;
+	private Transcoder<V> transcoder = null;
 	private final int MAX_EXPIRE;
-	
+
 	public MemCachedRecordWriter(Configuration conf) {
+		// read configuration
 		MAX_EXPIRE = conf.getInt(HTRCConstants.MEMCACHED_MAX_EXPIRE, 60);
 		int numClients = conf.getInt(HTRCConstants.MEMCACHED_CLIENT_NUM, 1);
 		String[] hostArray = conf.getStrings(HTRCConstants.MEMCACHED_HOSTS);
 		List<String> hosts = Arrays.asList(hostArray);
-		
-		client = ThreadedMemcachedClient.getThreadedMemcachedClient(numClients, hosts);
-		transcoder = new HadoopWritableTranscoder<VectorWritable>(
-				conf, VectorWritable.class);
+		Class<?> writableClass = conf.getClass("mapred.mapoutput.value.class",
+				Writable.class);
+
+		client = ThreadedMemcachedClient.getThreadedMemcachedClient(numClients,
+				hosts);
+		transcoder = new HadoopWritableTranscoder<V>(conf,
+				writableClass);
 	}
-	
+
 	@Override
 	public void close(TaskAttemptContext arg0) throws IOException,
 			InterruptedException {
@@ -65,8 +69,12 @@ public class MemCachedRecordWriter extends RecordWriter<Text, VectorWritable> {
 	}
 
 	@Override
-	public void write(Text key, VectorWritable val) throws IOException, InterruptedException {
-		client.getCache().add(key.toString(), MAX_EXPIRE, val, transcoder);
+	public void write(K key, V val) throws IOException,
+			InterruptedException {
+//		System.out.println(key.toString() + " " + ((VectorWritable)val).get());
+		
+		client.getCache().set(key.toString(), MAX_EXPIRE, val, transcoder);
+//		client.getCache().add(key.toString(), MAX_EXPIRE, key.toString());
 	}
 
 }

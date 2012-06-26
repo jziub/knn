@@ -43,8 +43,6 @@ public class HadoopWritableTranscoder<T extends Writable> implements Transcoder<
 //	private Class<?> writableClass;
 	
 	private T writable;
-	private DataOutputBuffer encodeBuffer = new DataOutputBuffer();
-	private DataInputBuffer decodeBuffer = new DataInputBuffer(); 
 	
 	@SuppressWarnings("unchecked")
 	public HadoopWritableTranscoder(Configuration conf, Class<?> writableClass) {
@@ -60,8 +58,9 @@ public class HadoopWritableTranscoder<T extends Writable> implements Transcoder<
 	@Override
 	public T decode(CachedData data) {
 		try {
+			DataInputBuffer decodeBuffer = new DataInputBuffer();
 			byte[] bytes = data.getData();			
-			decodeBuffer.reset(bytes, bytes.length);
+			decodeBuffer.reset(bytes, 0, bytes.length);
 			writable.readFields(decodeBuffer);
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -74,6 +73,7 @@ public class HadoopWritableTranscoder<T extends Writable> implements Transcoder<
 	public CachedData encode(T obj) {
 		CachedData data = null;
 		try {
+			DataOutputBuffer encodeBuffer = new DataOutputBuffer();
 			obj.write(encodeBuffer);
 			byte[] bytes = encodeBuffer.getData();
 			data = new CachedData(0, bytes, bytes.length);

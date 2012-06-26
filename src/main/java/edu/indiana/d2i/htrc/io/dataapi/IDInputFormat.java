@@ -44,6 +44,7 @@ import org.apache.hadoop.mapreduce.JobContext;
 import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.util.LineReader;
 
 import edu.indiana.d2i.htrc.HTRCConstants;
 
@@ -67,7 +68,7 @@ public class IDInputFormat<K extends Writable, V extends Writable> extends FileI
 			throw new RuntimeException("Cannot find hosts of HTRC Data Storage.");
 		String[] hosts = hostStr.split(",");
 		
-		String line = null;
+//		String line = null;
 		IDInputSplit split = new IDInputSplit(hosts);
 		List<InputSplit> splits = new ArrayList<InputSplit>();
 		Path[] dirs = getInputPaths(job);
@@ -76,9 +77,10 @@ public class IDInputFormat<K extends Writable, V extends Writable> extends FileI
 			for (int i = 0; i < dirs.length; i++) {
 				FileSystem fs = dirs[i].getFileSystem(job.getConfiguration());
 				DataInputStream fsinput = new DataInputStream(fs.open(dirs[i]));
-				BufferedReader reader = new BufferedReader(new InputStreamReader(fsinput));
-				while ((line = reader.readLine()) != null) {
-					split.addID(line);
+				LineReader reader = new LineReader(fsinput);
+				Text line = new Text();
+				while (reader.readLine(line) > 0) {
+					split.addID(line.toString());
 					if (split.getLength() >= numIdsInSplit) {
 						splits.add(split);
 						split = new IDInputSplit(hosts);

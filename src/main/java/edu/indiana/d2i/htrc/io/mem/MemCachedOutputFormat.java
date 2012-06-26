@@ -28,15 +28,14 @@ package edu.indiana.d2i.htrc.io.mem;
 
 import java.io.IOException;
 
-import org.apache.hadoop.io.Text;
+import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapreduce.JobContext;
 import org.apache.hadoop.mapreduce.OutputCommitter;
 import org.apache.hadoop.mapreduce.OutputFormat;
 import org.apache.hadoop.mapreduce.RecordWriter;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
-import org.apache.mahout.math.VectorWritable;
 
-public class MemCachedOutputFormat extends OutputFormat<Text, VectorWritable> {
+public class MemCachedOutputFormat<K extends Writable, V extends Writable> extends OutputFormat<K, V> {
 
 	// committer starts
 	public static class MemCachedOutputCommitter extends OutputCommitter {
@@ -83,9 +82,9 @@ public class MemCachedOutputFormat extends OutputFormat<Text, VectorWritable> {
 	}
 
 	@Override
-	public RecordWriter<Text, VectorWritable> getRecordWriter(TaskAttemptContext context)
+	public RecordWriter<K, V> getRecordWriter(TaskAttemptContext context)
 			throws IOException, InterruptedException {
-		return new MemCachedRecordWriter(context.getConfiguration());
+		return new MemCachedRecordWriter<K, V>(context.getConfiguration());
 	}
 	
 }

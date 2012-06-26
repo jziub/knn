@@ -76,7 +76,7 @@ public class Dictionary {
 //		String dicionaryPath = conf.get(HTRCConstants.DICTIONARY_PATH);
 		String dicionaryPath = conf.get("htrc.solr.dictionary");
 		
-		System.out.println("!!!dicionaryPath " + dicionaryPath);
+//		System.out.println("!!!dicionaryPath " + dicionaryPath);
 		
 		SequenceFile.Reader reader = new SequenceFile.Reader(
 				FileSystem.get(conf), new Path(dicionaryPath), conf);
