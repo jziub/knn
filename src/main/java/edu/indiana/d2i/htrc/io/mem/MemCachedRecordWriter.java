@@ -39,6 +39,7 @@ import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.mahout.math.VectorWritable;
 
 import edu.indiana.d2i.htrc.HTRCConstants;
+import edu.indiana.d2i.htrc.kmeans.MemKMeansConfig;
 
 // should change hard code class
 public class MemCachedRecordWriter<K extends Writable, V extends Writable> extends RecordWriter<K, V> {
@@ -46,15 +47,20 @@ public class MemCachedRecordWriter<K extends Writable, V extends Writable> exten
 	private ThreadedMemcachedClient client = null;
 	private Transcoder<V> transcoder = null;
 	private final int MAX_EXPIRE;
+	
+	private String NameSpace = "";
 
 	public MemCachedRecordWriter(Configuration conf) {
 		// read configuration
-		MAX_EXPIRE = conf.getInt(HTRCConstants.MEMCACHED_MAX_EXPIRE, 60);
-		int numClients = conf.getInt(HTRCConstants.MEMCACHED_CLIENT_NUM, 1);
+		MAX_EXPIRE = conf.getInt(HTRCConstants.MEMCACHED_MAX_EXPIRE, -1);
+		int numClients = conf.getInt(HTRCConstants.MEMCACHED_CLIENT_NUM, -1);
 		String[] hostArray = conf.getStrings(HTRCConstants.MEMCACHED_HOSTS);
 		List<String> hosts = Arrays.asList(hostArray);
-		Class<?> writableClass = conf.getClass("mapred.mapoutput.value.class",
+		Class<?> writableClass = conf.getClass("mapred.output.value.class",
 				Writable.class);
+		
+		String namespace = conf.get(MemKMeansConfig.KEY_NS);
+		if (namespace != null) NameSpace = namespace; 
 
 		client = ThreadedMemcachedClient.getThreadedMemcachedClient(numClients,
 				hosts);
@@ -65,7 +71,7 @@ public class MemCachedRecordWriter<K extends Writable, V extends Writable> exten
 	@Override
 	public void close(TaskAttemptContext arg0) throws IOException,
 			InterruptedException {
-		// nothing
+		client.close();
 	}
 
 	@Override
@@ -73,7 +79,7 @@ public class MemCachedRecordWriter<K extends Writable, V extends Writable> exten
 			InterruptedException {
 //		System.out.println(key.toString() + " " + ((VectorWritable)val).get());
 		
-		client.getCache().set(key.toString(), MAX_EXPIRE, val, transcoder);
+		client.getCache().set(NameSpace + key.toString(), MAX_EXPIRE, val, transcoder);
 //		client.getCache().add(key.toString(), MAX_EXPIRE, key.toString());
 	}
 

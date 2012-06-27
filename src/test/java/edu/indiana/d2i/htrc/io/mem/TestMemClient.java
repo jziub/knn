@@ -44,7 +44,8 @@ public class TestMemClient {
 		Transcoder<VectorWritable> transcoder = 
 				new HadoopWritableTranscoder<VectorWritable>(new Configuration(), VectorWritable.class);
 		
-		String[] keys = {"inu.30000125311054", "inu.30000125550933", "inu.30000108255526"};
+//		String[] keys = {"inu.30000125311054", "inu.30000125550933", "inu.30000108255526"};
+		String[] keys = {"inu.30000125550933"};
 //		Text val = new Text("my world");
 //		cache.set(key, 60, val, transcoder);
 		
@@ -53,7 +54,7 @@ public class TestMemClient {
 			VectorWritable obj = cache.get(key, transcoder);
 //			String obj = (String)cache.get(key);
 			if (obj != null) {
-//				System.out.println(key);
+				System.out.println(key);
 //				System.out.println(obj.get().size());
 				System.out.println(obj);
 			}

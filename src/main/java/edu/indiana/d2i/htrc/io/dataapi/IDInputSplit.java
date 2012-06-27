@@ -98,4 +98,8 @@ public class IDInputSplit extends InputSplit implements Writable {
 	public Iterator<String> getIDIterator() {
 		return idList.iterator();
 	}
+	
+	public List<String> getIDList() {
+		return idList;
+	}
 }

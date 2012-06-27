@@ -27,15 +27,22 @@
 package edu.indiana.d2i.htrc.io.mem;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+
+import org.apache.hadoop.conf.Configuration;
+import org.apache.mahout.math.VectorWritable;
+
+import edu.indiana.d2i.htrc.HTRCConstants;
 
 import net.spy.memcached.AddrUtil;
 import net.spy.memcached.BinaryConnectionFactory;
 import net.spy.memcached.MemcachedClient;
+import net.spy.memcached.transcoders.Transcoder;
 
 public class ThreadedMemcachedClient {
-	private static ThreadedMemcachedClient threadedClient = null;
-	private static MemcachedClient[] clients = null;
+//	private static ThreadedMemcachedClient threadedClient = null;
+	private MemcachedClient[] clients = null;
 	
 	private ThreadedMemcachedClient(int numClients, List<String> hosts) {
 		try {
@@ -57,11 +64,20 @@ public class ThreadedMemcachedClient {
 		return getThreadedMemcachedClient(1, hosts);
 	}
 	
+	public static ThreadedMemcachedClient getThreadedMemcachedClient(Configuration conf) {
+		int numClients = conf.getInt(HTRCConstants.MEMCACHED_CLIENT_NUM, 1);
+		String[] hostArray = conf.getStrings(HTRCConstants.MEMCACHED_HOSTS);
+		List<String> hosts = Arrays.asList(hostArray);
+		return getThreadedMemcachedClient(numClients, hosts);
+	}
+	
 	public static ThreadedMemcachedClient getThreadedMemcachedClient(int numClients, List<String> hosts) {
-		if (threadedClient == null) {
-			threadedClient = new ThreadedMemcachedClient(numClients, hosts);
-		}
-		return threadedClient;
+//		if (threadedClient == null) {
+//			threadedClient = new ThreadedMemcachedClient(numClients, hosts);
+//		}
+//		return threadedClient;
+		
+		return new ThreadedMemcachedClient(numClients, hosts);
 	}
 	
 	public MemcachedClient getCache() {
@@ -70,5 +86,13 @@ public class ThreadedMemcachedClient {
 			int index = (int)(Math.random() * length);
 			return clients[index];
 		}
+	}
+	
+	public void close() {
+		for (int i = 0; i < clients.length; i++) {
+			clients[i].shutdown();
+			clients[i] = null;
+		}
+//		threadedClient = null;
 	}
 }

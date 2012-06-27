@@ -26,7 +26,6 @@
 
 package edu.indiana.d2i.htrc.io;
 
-import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.StringReader;
 
@@ -59,7 +58,7 @@ import edu.indiana.d2i.htrc.io.index.filter.DictionaryFilter;
 import edu.indiana.d2i.htrc.io.index.filter.HTRCFilter;
 import edu.indiana.d2i.htrc.io.index.filter.StopWordFilter;
 import edu.indiana.d2i.htrc.io.index.filter.WordLengthFilter;
-import edu.indiana.d2i.htrc.io.mem.MemCachedConfHelper;
+import edu.indiana.d2i.htrc.io.mem.MemCachedUtil;
 import edu.indiana.d2i.htrc.io.mem.MemCachedOutputFormat;
 import edu.indiana.d2i.htrc.util.Utilities;
 
@@ -158,15 +157,15 @@ public class SparseVectorsToMemcached extends Configured implements Tool {
 		int maxIdsPerReq = Integer.valueOf(args[6]);
 		String memHostsPath = args[7];
 
-//		logger.info("SparseVectorsToMemcached ");
-//		logger.info(" - input: " + inputPath);   // id list
-//		logger.info(" - output: " + outputPath); // vectors
-//		logger.info(" - dictPath: " + dictPath); //  
-//		logger.info(" - maxIdsPerSplit: " + maxIdsPerSplit);
-//		logger.info(" - dataAPIConfClassName: " + dataAPIConfClassName);
-//		logger.info(" - analyzerName: " + analyzerClassName);
-//		logger.info(" - maxIdsPerReq: " + maxIdsPerReq);
-//		logger.info(" - memHostsPath: " + memHostsPath); // memcached hosts list
+		logger.info("SparseVectorsToMemcached ");
+		logger.info(" - input: " + inputPath);   // id list
+		logger.info(" - output: " + outputPath); // vectors
+		logger.info(" - dictPath: " + dictPath); //  
+		logger.info(" - maxIdsPerSplit: " + maxIdsPerSplit);
+		logger.info(" - dataAPIConfClassName: " + dataAPIConfClassName);
+		logger.info(" - analyzerName: " + analyzerClassName);
+		logger.info(" - maxIdsPerReq: " + maxIdsPerReq);
+		logger.info(" - memHostsPath: " + memHostsPath); // memcached hosts list
 
 		//
 		Job job = new Job(getConf(),
@@ -187,7 +186,7 @@ public class SparseVectorsToMemcached extends Configured implements Tool {
 				maxIdsPerReq);
 		
 		// set memcached conf
-		MemCachedConfHelper.hadoopConfHelper(job.getConfiguration(), memHostsPath);
+		MemCachedUtil.configHelper(job.getConfiguration(), memHostsPath);
 
 		// no speculation
 		job.getConfiguration().setBoolean(

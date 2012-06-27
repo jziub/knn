@@ -24,18 +24,19 @@
 # 
 */
 
-package edu.indiana.d2i.htrc.io.dataapi;
+package edu.indiana.d2i.htrc.io.mem;
 
-import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import net.spy.memcached.transcoders.Transcoder;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.Text;
@@ -45,29 +46,89 @@ import org.apache.hadoop.mapreduce.JobContext;
 import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
-import org.apache.hadoop.util.LineReader;
+import org.apache.mahout.math.VectorWritable;
 
 import edu.indiana.d2i.htrc.HTRCConstants;
+import edu.indiana.d2i.htrc.io.dataapi.IDInputSplit;
+import edu.indiana.d2i.htrc.io.dataapi.IDList;
 
-public class IDInputFormat<K extends Writable, V extends Writable> extends FileInputFormat<K, V>  {
-	private static final Log logger = LogFactory.getLog(IDInputFormat.class);
+public class MemIDInputFormat extends FileInputFormat<Text, VectorWritable>  {
+	private static final Log logger = LogFactory.getLog(MemIDInputFormat.class);
 	
-	@SuppressWarnings("unchecked")
+	class MemCachedRecordReader extends RecordReader<Text, VectorWritable> {
+
+		private IDInputSplit split = null;
+		private Configuration conf = null;
+		
+		private List<String> idList = null;
+		private Iterator<String> iditerator = null;
+		private int count = 0;
+		
+		private ThreadedMemcachedClient client = null;
+		private Transcoder<VectorWritable> transcoder = null;
+		
+		private Text key = new Text();
+		private VectorWritable val;
+		
+		@Override
+		public void close() throws IOException {
+			client.close();
+		}
+
+		@Override
+		public Text getCurrentKey() throws IOException, InterruptedException {
+			return key;
+		}
+
+		@Override
+		public VectorWritable getCurrentValue() throws IOException, InterruptedException {
+			return val;
+		}
+
+		@Override
+		public float getProgress() throws IOException, InterruptedException {
+			return (float)count / idList.size();
+		}
+
+		@Override
+		public void initialize(InputSplit split, TaskAttemptContext taskAttemptContext)
+				throws IOException, InterruptedException {
+			this.split = (IDInputSplit)split;
+			this.conf = taskAttemptContext.getConfiguration();
+			this.idList = this.split.getIDList();
+			this.iditerator = this.idList.iterator();
+			
+			Class<?> writableClass = VectorWritable.class;
+			client = ThreadedMemcachedClient.getThreadedMemcachedClient(conf);
+			transcoder = new HadoopWritableTranscoder<VectorWritable>(conf,
+					writableClass);
+		}
+
+		@Override
+		public boolean nextKeyValue() throws IOException, InterruptedException {
+			if (!iditerator.hasNext()) return false;
+			
+			String id = iditerator.next();
+			key.set(id);
+			val = client.getCache().get(id, transcoder);
+			count++;
+			return true;
+		}
+	}
+	
 	@Override
-	public RecordReader<K, V> createRecordReader(InputSplit arg0,
+	public RecordReader<Text, VectorWritable> createRecordReader(InputSplit arg0,
 			TaskAttemptContext arg1) throws IOException, InterruptedException {
-		return (RecordReader<K, V>) new IDRecorderReader();
+		return (RecordReader<Text, VectorWritable>) new MemCachedRecordReader();
 	}
 
 	@Override
 	public List<InputSplit> getSplits(JobContext job) throws IOException {
 		int numIdsInSplit = job.getConfiguration().getInt(HTRCConstants.MAX_IDNUM_SPLIT, 
 				(int)1e6);
-		String hostStr = job.getConfiguration().get(HTRCConstants.HOSTS_SEPARATEDBY_COMMA, 
-				HTRCConstants.DATA_API_DEFAULT_URL);
-		if (hostStr == null) 
-			throw new RuntimeException("Cannot find hosts of HTRC Data Storage.");
-		String[] hosts = hostStr.split(",");
+		String[] hosts = job.getConfiguration().getStrings(HTRCConstants.MEMCACHED_HOSTS);
+		if (hosts == null)
+			throw new IllegalArgumentException("No host is found for memcached");
 		
 		IDInputSplit split = new IDInputSplit(hosts);
 		List<InputSplit> splits = new ArrayList<InputSplit>();
@@ -85,17 +146,6 @@ public class IDInputFormat<K extends Writable, V extends Writable> extends FileI
 						split = new IDInputSplit(hosts);
 					}
 				}
-				
-//				LineReader reader = new LineReader(fsinput);
-//				Text line = new Text();
-//				while (reader.readLine(line) > 0) {
-//					split.addID(line.toString());
-//					if (split.getLength() >= numIdsInSplit) {
-//						splits.add(split);
-//						split = new IDInputSplit(hosts);
-//					}
-//				}
-//				reader.close();
 			}
 			if (split != null && split.getLength() != 0) splits.add(split);
 		} catch (InterruptedException e) {

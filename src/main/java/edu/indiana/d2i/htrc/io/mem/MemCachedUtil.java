@@ -17,7 +17,7 @@
 # -----------------------------------------------------------------
 #
 # Project: knn
-# File:  MemCachedConfHelper.java
+# File:  MemCacheUtil.java
 # Description:  
 #
 # -----------------------------------------------------------------
@@ -39,8 +39,8 @@ import org.apache.hadoop.fs.Path;
 
 import edu.indiana.d2i.htrc.HTRCConstants;
 
-public class MemCachedConfHelper {
-	public static void hadoopConfHelper(Configuration conf, String memhostsPath) throws IOException {
+public class MemCachedUtil {
+	public static void configHelper(Configuration conf, String memhostsPath) throws IOException {
 		List<String> hosts = new ArrayList<String>();
 		FileSystem fs = FileSystem.get(conf);
 		DataInputStream fsinput = new DataInputStream(fs.open(new Path(memhostsPath)));
@@ -54,7 +54,7 @@ public class MemCachedConfHelper {
 		
 		conf.setInt(HTRCConstants.MEMCACHED_CLIENT_NUM, 1);
 //		conf.setInt(HTRCConstants.MEMCACHED_MAX_EXPIRE, Integer.MAX_VALUE);
-		conf.setInt(HTRCConstants.MEMCACHED_MAX_EXPIRE, 60*5); // seconds
+		conf.setInt(HTRCConstants.MEMCACHED_MAX_EXPIRE, 60*60); // seconds
 		conf.setStrings(HTRCConstants.MEMCACHED_HOSTS, hostsArray);
 	}
 }
