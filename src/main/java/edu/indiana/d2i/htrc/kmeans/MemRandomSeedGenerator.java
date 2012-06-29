@@ -113,7 +113,8 @@ public final class MemRandomSeedGenerator {
 					chosenClusters.add(newCluster);
 				}
 			} else {
-				throw new RuntimeException("cannot find VectorWritable for " + id);
+				logger.error("cannot find VectorWritable for " + id);
+//				throw new RuntimeException("cannot find VectorWritable for " + id);
 			}
 		}
 

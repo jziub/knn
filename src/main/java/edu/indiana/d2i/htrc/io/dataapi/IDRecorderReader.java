@@ -72,7 +72,6 @@ public class IDRecorderReader extends RecordReader<Text, Text> {
 		if (strBuilder.length() > 0) {
 			Iterable<Entry<String, String>> content = 
 					dataClient.getID2Content(strBuilder.toString());
-//			return (content == null) ? null: content.iterator();
 			if (content != null) {
 				return content.iterator();
 			} else {

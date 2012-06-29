@@ -83,6 +83,7 @@ final class MemKMeansUtil {
 			if (cluster != null) {
 				clusters.add(cluster);
 			} else {
+//				logger.error("cannot find VectorWritable for " + id);
 				throw new RuntimeException("can't find cluster " + toClusterName(String.valueOf(i)));
 			}			
 		}

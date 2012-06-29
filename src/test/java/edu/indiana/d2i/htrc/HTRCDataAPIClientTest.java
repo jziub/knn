@@ -45,7 +45,7 @@ public class HTRCDataAPIClientTest {
 				.authentication(selfsigned).selfsigned(selfsigned).clientID(clientID)
 				.clientSecrete(clientSecrete).tokenLocation(tokenLoc).build();
 		
-		String queryStr = "yale.39002052249902|uc2.ark:/13960/t88g8h13f|uc2.ark:/13960/t6sx67388|uc2.ark:/13960/t5j96547r|uc2.ark:/13960/t6ww79z3v|yale.39002085406669|miua.4918260.0305.001|uc2.ark:/13960/t3416xb23|uc2.ark:/13960/t86h4mv25|loc.ark:/13960/t2k64mv58|";
+		String queryStr = "inu.30000093406142";
 		Iterable<Entry<String, String>> content = client.getID2Content(queryStr);
 		Iterator<Entry<String, String>> iterator = content.iterator();
 		while (iterator.hasNext()) {

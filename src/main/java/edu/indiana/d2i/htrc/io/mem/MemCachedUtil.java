@@ -54,7 +54,7 @@ public class MemCachedUtil {
 		
 		conf.setInt(HTRCConstants.MEMCACHED_CLIENT_NUM, 1);
 //		conf.setInt(HTRCConstants.MEMCACHED_MAX_EXPIRE, Integer.MAX_VALUE);
-		conf.setInt(HTRCConstants.MEMCACHED_MAX_EXPIRE, 60*60); // seconds
+		conf.setInt(HTRCConstants.MEMCACHED_MAX_EXPIRE, 60*60*60); // seconds
 		conf.setStrings(HTRCConstants.MEMCACHED_HOSTS, hostsArray);
 	}
 }

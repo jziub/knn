@@ -26,13 +26,21 @@
 
 package edu.indiana.d2i.htrc.io;
 
+import java.io.BufferedReader;
+import java.io.DataInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.StringReader;
+import java.util.Map.Entry;
+
+import net.spy.memcached.MemcachedClient;
+import net.spy.memcached.transcoders.Transcoder;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
@@ -52,14 +60,17 @@ import org.apache.mahout.vectorizer.DefaultAnalyzer;
 import org.apache.mahout.vectorizer.DocumentProcessor;
 
 import edu.indiana.d2i.htrc.HTRCConstants;
+import edu.indiana.d2i.htrc.io.dataapi.HTRCDataAPIClient;
 import edu.indiana.d2i.htrc.io.dataapi.IDInputFormat;
 import edu.indiana.d2i.htrc.io.index.Dictionary;
 import edu.indiana.d2i.htrc.io.index.filter.DictionaryFilter;
 import edu.indiana.d2i.htrc.io.index.filter.HTRCFilter;
 import edu.indiana.d2i.htrc.io.index.filter.StopWordFilter;
 import edu.indiana.d2i.htrc.io.index.filter.WordLengthFilter;
+import edu.indiana.d2i.htrc.io.mem.HadoopWritableTranscoder;
 import edu.indiana.d2i.htrc.io.mem.MemCachedUtil;
 import edu.indiana.d2i.htrc.io.mem.MemCachedOutputFormat;
+import edu.indiana.d2i.htrc.io.mem.ThreadedMemcachedClient;
 import edu.indiana.d2i.htrc.util.Utilities;
 
 /**
@@ -85,27 +96,32 @@ public class SparseVectorsToMemcached extends Configured implements Tool {
 
 		@Override
 		public void map(Text key, Text value, Context context)
-				throws IOException, InterruptedException {			
-			Vector result = new RandomAccessSparseVector(dictionary.size());
+				throws IOException, InterruptedException {
+//			Vector result = new RandomAccessSparseVector(dictionary.size());
+//
+//			long initCPU = System.nanoTime();
+//			TokenStream stream = analyzer.reusableTokenStream(key.toString(),
+//					new StringReader(value.toString()));
+//			CharTermAttribute termAtt = stream
+//					.addAttribute(CharTermAttribute.class);
+//			stream.reset();
+//			while (stream.incrementToken()) {
+//				// String term = new String(termAtt.buffer(), 0,
+//				// termAtt.length());
+//				String term = new String(termAtt.buffer(), 0, termAtt.length())
+//						.toLowerCase();
+//				if (filter.accept(term, 0)) {
+//					int index = dictionary.get(term);
+//					result.setQuick(index, result.get(index) + 1);
+//					numTerms++;
+//				}
+//			}
+//			elapsedTime += System.nanoTime() - initCPU;
+			
+			Vector result = transform2Vector(value.toString(), key.toString(), 
+					analyzer, filter, dictionary);
 
-			long initCPU = System.nanoTime();
-			TokenStream stream = analyzer.reusableTokenStream(key.toString(),
-					new StringReader(value.toString()));
-			CharTermAttribute termAtt = stream
-					.addAttribute(CharTermAttribute.class);
-			stream.reset();
-			while (stream.incrementToken()) {
-//				String term = new String(termAtt.buffer(), 0, termAtt.length());
-				String term = new String(termAtt.buffer(), 0, termAtt.length()).toLowerCase();
-				if (filter.accept(term, 0)) {
-					int index = dictionary.get(term);
-					result.setQuick(index, result.get(index)+1);
-					numTerms++;
-				}
-			}
-			elapsedTime += System.nanoTime() - initCPU;
-
-//			VectorWritable vectorWritable = new VectorWritable();
+			// VectorWritable vectorWritable = new VectorWritable();
 			vectorWritable.set(result);
 			context.write(key, vectorWritable);
 		}
@@ -114,7 +130,7 @@ public class SparseVectorsToMemcached extends Configured implements Tool {
 		protected void setup(Context context) throws IOException,
 				InterruptedException {
 			super.setup(context);
-			
+
 			dictionary = new Dictionary(context.getConfiguration());
 
 			analyzer = ClassUtils.instantiateAs(
@@ -122,7 +138,8 @@ public class SparseVectorsToMemcached extends Configured implements Tool {
 							DocumentProcessor.ANALYZER_CLASS,
 							DefaultAnalyzer.class.getName()), Analyzer.class);
 
-			filter = new StopWordFilter("stopwords.txt"); // found in the classpath
+			filter = new StopWordFilter("stopwords.txt"); // found in the
+															// classpath
 			filter.addNextFilter(new DictionaryFilter(dictionary));
 			filter.addNextFilter(new WordLengthFilter(context
 					.getConfiguration().getInt(
@@ -141,57 +158,133 @@ public class SparseVectorsToMemcached extends Configured implements Tool {
 		System.out.println("Bad input arguments!");
 		System.exit(1);
 	}
+	
+	private static Vector transform2Vector(String text, String field, 
+			Analyzer analyzer, HTRCFilter filter, Dictionary dictionary) throws IOException {
+		Vector result = new RandomAccessSparseVector(dictionary.size());
 
-	@Override
-	public int run(String[] args) throws Exception {
-		if (args.length != 8) {
-			printUsage();
+		TokenStream stream = analyzer.reusableTokenStream(field,
+				new StringReader(text.toString()));
+		CharTermAttribute termAtt = stream
+				.addAttribute(CharTermAttribute.class);
+		stream.reset();
+		while (stream.incrementToken()) {
+			// String term = new String(termAtt.buffer(), 0,
+			// termAtt.length());
+			String term = new String(termAtt.buffer(), 0, termAtt.length())
+					.toLowerCase();
+			if (filter.accept(term, 0)) {
+				int index = dictionary.get(term);
+				result.setQuick(index, result.get(index) + 1);
+			}
 		}
+		
+		return result;
+	}
 
-		String inputPath = args[0];
-		String outputPath = args[1];
-		String dictPath = args[2];
-		int maxIdsPerSplit = Integer.valueOf(args[3]);
-		String dataAPIConfClassName = args[4];
-		String analyzerClassName = args[5];
-		int maxIdsPerReq = Integer.valueOf(args[6]);
-		String memHostsPath = args[7];
+	private String inputPath;
+	private String outputPath;
+	private String dictPath;
+	private int maxIdsPerSplit;
+	private String dataAPIConfClassName;
+	private String analyzerClassName;
+	private int maxIdsPerReq;
+	private String memHostsPath;
 
-		logger.info("SparseVectorsToMemcached ");
-		logger.info(" - input: " + inputPath);   // id list
-		logger.info(" - output: " + outputPath); // vectors
-		logger.info(" - dictPath: " + dictPath); //  
-		logger.info(" - maxIdsPerSplit: " + maxIdsPerSplit);
-		logger.info(" - dataAPIConfClassName: " + dataAPIConfClassName);
-		logger.info(" - analyzerName: " + analyzerClassName);
-		logger.info(" - maxIdsPerReq: " + maxIdsPerReq);
-		logger.info(" - memHostsPath: " + memHostsPath); // memcached hosts list
+	private void setupConfiguration(Configuration conf)
+			throws ClassNotFoundException, IOException {
+		// set dictionary
+		conf.set(HTRCConstants.DICTIONARY_PATH, dictPath);
 
+		// set analyzer
+		conf.set(DocumentProcessor.ANALYZER_CLASS, analyzerClassName);
+
+		// set data api conf
+		conf.setInt(HTRCConstants.MAX_IDNUM_SPLIT, maxIdsPerSplit);
+		Utilities.setDataAPIConf(conf, dataAPIConfClassName, maxIdsPerReq);
+
+		// set memcached conf
+		MemCachedUtil.configHelper(conf, memHostsPath);
+	}
+
+	private void sequentialTransform() throws Exception {
+		Configuration conf = getConf();
+		setupConfiguration(conf);
+
+		HTRCDataAPIClient client = Utilities.creatDataAPIClient(conf);
+		
+		// set up analyzer, filter
+		Analyzer analyzer = ClassUtils.instantiateAs(
+				conf.get(
+						DocumentProcessor.ANALYZER_CLASS,
+						DefaultAnalyzer.class.getName()), Analyzer.class);
+		HTRCFilter filter = new StopWordFilter("stopwords.txt"); // found in the classpath
+		Dictionary dictionary = new Dictionary(conf);
+		filter.addNextFilter(new DictionaryFilter(dictionary));
+		filter.addNextFilter(new WordLengthFilter(conf.getInt(
+						HTRCConstants.FILTER_WORD_MIN_LENGTH, 2)));
+
+		// memcached client
+		ThreadedMemcachedClient memcachedClient = ThreadedMemcachedClient.
+				getThreadedMemcachedClient(conf);
+		MemcachedClient cache = memcachedClient.getCache();
+		int maxExpir = conf.getInt(HTRCConstants.MEMCACHED_MAX_EXPIRE, -1);
+		Transcoder<VectorWritable> transcoder = 
+				new HadoopWritableTranscoder<VectorWritable>(conf, VectorWritable.class);
+		
+		//
+		Path input = new Path(inputPath);
+		FileSystem fs = input.getFileSystem(conf);
+		DataInputStream fsinput = new DataInputStream(fs.open(input));
+		BufferedReader reader = new BufferedReader(new InputStreamReader(
+				fsinput));
+		String line = null;
+		int idNumThreshold = maxIdsPerReq;
+		int idNum = 0;
+		StringBuilder idList = new StringBuilder();
+		VectorWritable vectorWritable = new VectorWritable();
+		while ((line = reader.readLine()) != null) {
+			idList.append(line + "|");
+			if ((++idNum) >= idNumThreshold) {
+				// <id, content>
+				Iterable<Entry<String, String>> content = client
+						.getID2Content(idList.toString());
+				for (Entry<String, String> entry : content) {
+					Vector result = transform2Vector(entry.getValue(), entry.getKey(), 
+							analyzer, filter, dictionary);
+					vectorWritable.set(result);
+					cache.set(entry.getKey(), maxExpir, vectorWritable, transcoder);
+				}
+				
+				idList = new StringBuilder();
+				idNum = 0;
+			}
+		}
+		if (idList.length() > 0) {
+			Iterable<Entry<String, String>> content = 
+					client.getID2Content(idList.toString());
+			for (Entry<String, String> entry : content) {
+				Vector result = transform2Vector(entry.getValue(), entry.getKey(), 
+						analyzer, filter, dictionary);
+				vectorWritable.set(result);
+				cache.set(entry.getKey(), maxExpir, vectorWritable, transcoder);
+			}
+		}
+	}
+
+	private void parallelTransform() throws IOException, ClassNotFoundException, InterruptedException {
 		//
 		Job job = new Job(getConf(),
 				"Create sparse vectors from HTRC data storage, store them in MemCached");
 		job.setJarByClass(SparseVectorsToMemcached.class);
 
-		// set dictionary
-		job.getConfiguration().set(HTRCConstants.DICTIONARY_PATH, dictPath);
+		Configuration conf = job.getConfiguration();
+		setupConfiguration(conf);
 		
-		// set analyzer
-		job.getConfiguration().set(DocumentProcessor.ANALYZER_CLASS,
-				analyzerClassName);
-
-		// set data api conf
-		job.getConfiguration().setInt(HTRCConstants.MAX_IDNUM_SPLIT,
-				maxIdsPerSplit);
-		Utilities.setDataAPIConf(job.getConfiguration(), dataAPIConfClassName,
-				maxIdsPerReq);
-		
-		// set memcached conf
-		MemCachedUtil.configHelper(job.getConfiguration(), memHostsPath);
-
 		// no speculation
-		job.getConfiguration().setBoolean(
+		conf.setBoolean(
 				"mapred.map.tasks.speculative.execution", false);
-		job.getConfiguration().setBoolean(
+		conf.setBoolean(
 				"mapred.reduce.tasks.speculative.execution", false);
 
 		job.setInputFormatClass(IDInputFormat.class);
@@ -208,11 +301,44 @@ public class SparseVectorsToMemcached extends Configured implements Tool {
 		FileInputFormat.setInputPaths(job, new Path(inputPath));
 		FileOutputFormat.setOutputPath(job, new Path(outputPath));
 
-		long start = System.nanoTime();
 		job.waitForCompletion(true);
-		logger.info("SparseVectorsFromRawText took " + (System.nanoTime() - start)
-				/ 1e9 + " seconds.");
+	}
+	
+	@Override
+	public int run(String[] args) throws Exception {
+		if (args.length != 9) {
+			printUsage();
+		}
 
+		inputPath = args[0];
+		outputPath = args[1];
+		dictPath = args[2];
+		maxIdsPerSplit = Integer.valueOf(args[3]);
+		dataAPIConfClassName = args[4];
+		analyzerClassName = args[5];
+		maxIdsPerReq = Integer.valueOf(args[6]);
+		memHostsPath = args[7];
+		boolean seq = Boolean.valueOf(args[8]);
+
+		logger.info("SparseVectorsToMemcached ");
+		logger.info(" - input: " + inputPath); // id list
+		logger.info(" - output: " + outputPath); // vectors
+		logger.info(" - dictPath: " + dictPath); //
+		logger.info(" - maxIdsPerSplit: " + maxIdsPerSplit);
+		logger.info(" - dataAPIConfClassName: " + dataAPIConfClassName);
+		logger.info(" - analyzerName: " + analyzerClassName);
+		logger.info(" - maxIdsPerReq: " + maxIdsPerReq);
+		logger.info(" - memHostsPath: " + memHostsPath); // memcached hosts list
+		logger.info(" - sequential: " + seq); // memcached hosts list
+
+		long start = System.nanoTime();
+		if (seq) 
+			sequentialTransform();
+		else 
+			parallelTransform();
+		logger.info("SparseVectorsToMemcached took "
+				+ (System.nanoTime() - start) / 1e9 + " seconds.");
+		
 		return 0;
 	}
 

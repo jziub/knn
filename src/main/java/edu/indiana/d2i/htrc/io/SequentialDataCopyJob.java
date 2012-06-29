@@ -56,10 +56,12 @@ public class SequentialDataCopyJob extends Configured implements Tool {
 	
 	private void text2Seq(Iterable<Entry<String, String>> content, ChunkedWriter chunkWriter) 
 			throws IOException {
-		Iterator<Entry<String, String>> iterator = content.iterator();
-		while (iterator.hasNext()) {
-			Entry<String, String> entry = iterator.next();
-			chunkWriter.write(entry.getKey(), entry.getValue());
+		if (content != null) {
+			Iterator<Entry<String, String>> iterator = content.iterator();
+			while (iterator.hasNext()) {
+				Entry<String, String> entry = iterator.next();
+				chunkWriter.write(entry.getKey(), entry.getValue());
+			}
 		}
 	}
 	
