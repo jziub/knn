@@ -51,7 +51,7 @@ public class HTRCDataAPIClientTest {
 		while (iterator.hasNext()) {
 			Entry<String, String> entry = iterator.next();
 			System.out.println(entry.getKey());
-//			System.out.println(entry.getValue());
+			System.out.println(entry.getValue());
 		}
 	}
 }

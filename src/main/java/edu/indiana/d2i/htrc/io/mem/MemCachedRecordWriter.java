@@ -32,6 +32,8 @@ import java.util.List;
 
 import net.spy.memcached.transcoders.Transcoder;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapreduce.RecordWriter;
@@ -44,6 +46,8 @@ import edu.indiana.d2i.htrc.kmeans.MemKMeansConfig;
 // should change hard code class
 public class MemCachedRecordWriter<K extends Writable, V extends Writable> extends RecordWriter<K, V> {
 
+	private static final Log logger = LogFactory.getLog(MemCachedRecordWriter.class);
+	
 	private ThreadedMemcachedClient client = null;
 	private Transcoder<V> transcoder = null;
 	private final int MAX_EXPIRE;
@@ -80,7 +84,16 @@ public class MemCachedRecordWriter<K extends Writable, V extends Writable> exten
 //		System.out.println(key.toString() + " " + ((VectorWritable)val).get());
 		
 		client.getCache().set(NameSpace + key.toString(), MAX_EXPIRE, val, transcoder);
-//		client.getCache().add(key.toString(), MAX_EXPIRE, key.toString());
+		
+		// validate
+		V vecWritable = client.getCache().get(NameSpace + key.toString(),
+				transcoder);
+		if (vecWritable == null) {
+			throw new RuntimeException(key.toString()
+					+ " is not written to Memcached.");
+		} else {
+			logger.info(key.toString());
+		}
 	}
 
 }

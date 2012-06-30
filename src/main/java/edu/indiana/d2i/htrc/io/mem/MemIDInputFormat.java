@@ -111,6 +111,17 @@ public class MemIDInputFormat extends FileInputFormat<Text, VectorWritable>  {
 			String id = iditerator.next();
 			key.set(id);
 			val = client.getCache().get(id, transcoder);
+			while (val == null) {
+				logger.error("ignore id " + id);
+				if (iditerator.hasNext()) {
+					id = iditerator.next();
+					key.set(id);
+					val = client.getCache().get(id, transcoder);
+				} else {
+					return false;
+				}
+			}
+			
 			count++;
 			return true;
 		}
@@ -126,11 +137,12 @@ public class MemIDInputFormat extends FileInputFormat<Text, VectorWritable>  {
 	public List<InputSplit> getSplits(JobContext job) throws IOException {
 		int numIdsInSplit = job.getConfiguration().getInt(HTRCConstants.MAX_IDNUM_SPLIT, 
 				(int)1e6);
-		String[] hosts = job.getConfiguration().getStrings(HTRCConstants.MEMCACHED_HOSTS);
-		if (hosts == null)
-			throw new IllegalArgumentException("No host is found for memcached");
+//		String[] hosts = job.getConfiguration().getStrings(HTRCConstants.MEMCACHED_HOSTS);
+//		if (hosts == null)
+//			throw new IllegalArgumentException("No host is found for memcached");
 		
-		IDInputSplit split = new IDInputSplit(hosts);
+//		IDInputSplit split = new IDInputSplit(hosts);
+		IDInputSplit split = new IDInputSplit();
 		List<InputSplit> splits = new ArrayList<InputSplit>();
 		Path[] dirs = getInputPaths(job);
 		try {
@@ -143,7 +155,8 @@ public class MemIDInputFormat extends FileInputFormat<Text, VectorWritable>  {
 					split.addID(id.toString());
 					if (split.getLength() >= numIdsInSplit) {
 						splits.add(split);
-						split = new IDInputSplit(hosts);
+//						split = new IDInputSplit(hosts);
+						split = new IDInputSplit();
 					}
 				}
 			}
