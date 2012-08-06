@@ -68,7 +68,7 @@ public class MemKMeansReducer extends Reducer<Text, ClusterObservations, Text, C
 		cluster.computeParameters();
 //		context.write(new Text(cluster.getIdentifier()), cluster);
 		
-		identifier.set(String.valueOf(count++));
+		identifier.set(MemKMeansUtil.toClusterName(count++));
 		context.write(identifier, cluster);
 	}
 

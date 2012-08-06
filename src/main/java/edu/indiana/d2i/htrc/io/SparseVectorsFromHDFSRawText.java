@@ -87,7 +87,7 @@ public class SparseVectorsFromHDFSRawText extends Configured implements Tool {
 		job.setOutputKeyClass(Text.class);
 		job.setOutputValueClass(VectorWritable.class);
 
-		job.setMapperClass(SparseVectorUtil.MyMapper.class);
+		job.setMapperClass(SparseVectorUtil.Text2VectorMapper.class);
 		job.setNumReduceTasks(0);
 
 		FileInputFormat.setInputPaths(job, inputPath);

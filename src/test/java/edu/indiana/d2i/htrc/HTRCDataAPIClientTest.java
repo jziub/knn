@@ -33,14 +33,20 @@ import edu.indiana.d2i.htrc.io.dataapi.HTRCDataAPIClient;
 
 public class HTRCDataAPIClientTest {
 	public static void main(String[] args) throws Exception {
-		String url = "129-79-49-119.dhcp-bl.indiana.edu:25443";
-//		String url = "129.79.49.119.dhcp-bl.indiana.edu:25443";
+//		String url = "129-79-49-119.dhcp-bl.indiana.edu:25443";
+//		String delimitor = "|";
+//		String clientID = "yim";
+//		String clientSecrete = "yim";
+//		String tokenLoc = "https://129-79-49-119.dhcp-bl.indiana.edu:25443/oauth2/token?grant_type=client_credentials";
+//		boolean selfsigned = true;
+		
+		String url = "silvermaple.pti.indiana.edu:25443";
 		String delimitor = "|";
-		String clientID = "yim";
-		String clientSecrete = "yim";
-		String tokenLoc = "https://129-79-49-119.dhcp-bl.indiana.edu:25443/oauth2/token?grant_type=client_credentials";
-		boolean selfsigned = true;
-
+		String clientID = "drhtrc";
+		String clientSecrete = "d0ct0r.htrc";
+		String tokenLoc = "https://silvermaple.pti.indiana.edu:25443/oauth2/token?grant_type=client_credentials";
+		boolean selfsigned = false;
+		
 		HTRCDataAPIClient client = new HTRCDataAPIClient.Builder(url, delimitor)
 				.authentication(selfsigned).selfsigned(selfsigned).clientID(clientID)
 				.clientSecrete(clientSecrete).tokenLocation(tokenLoc).build();

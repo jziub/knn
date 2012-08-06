@@ -72,7 +72,7 @@ public class SparseVectorUtil {
 		return result;
 	}
 	
-	public static class MyMapper extends Mapper<Text, Text, Text, VectorWritable> {
+	public static class Text2VectorMapper extends Mapper<Text, Text, Text, VectorWritable> {
 		private Analyzer analyzer;
 		private VectorWritable vectorWritable = new VectorWritable();
 

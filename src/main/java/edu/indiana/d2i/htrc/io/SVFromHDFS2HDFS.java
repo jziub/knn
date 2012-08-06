@@ -39,6 +39,7 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.apache.hadoop.util.Tool;
@@ -66,9 +67,9 @@ import edu.indiana.d2i.htrc.util.Utilities;
 /**
  * no frequence filter can be applied in this case
  */
-public class SparseVectorsFromRawText extends Configured implements Tool {
+public class SVFromHDFS2HDFS extends Configured implements Tool {
 	private static final Log logger = LogFactory
-			.getLog(SparseVectorsFromRawText.class);
+			.getLog(SVFromHDFS2HDFS.class);
 
 	static class MapperClass extends Mapper<Text, Text, Text, VectorWritable> {
 		private Analyzer analyzer;
@@ -140,31 +141,25 @@ public class SparseVectorsFromRawText extends Configured implements Tool {
 
 	@Override
 	public int run(String[] args) throws Exception {
-		if (args.length != 7) {
+		if (args.length != 4) {
 			printUsage();
 		}
 
 		String inputPath = args[0];
 		String outputPath = args[1];
 		String dictPath = args[2];
-		int maxIdsPerSplit = Integer.valueOf(args[3]);
-		String dataAPIConfClassName = args[4];
-		String analyzerClassName = args[5];
-		int maxIdsPerReq = Integer.valueOf(args[6]);
+		String analyzerClassName = args[3];
 
 		logger.info("DataCopyTokenizerJob ");
 		logger.info(" - input: " + inputPath);
 		logger.info(" - output: " + outputPath);
 		logger.info(" - dictPath: " + dictPath);
-		logger.info(" - maxIdsPerSplit: " + maxIdsPerSplit);
-		logger.info(" - dataAPIConfClassName: " + dataAPIConfClassName);
 		logger.info(" - analyzerName: " + analyzerClassName);
-		logger.info(" - maxIdsPerReq: " + maxIdsPerReq);
 
 		//
 		Job job = new Job(getConf(),
 				"Create sparse vector from HTRC data storage.");
-		job.setJarByClass(SparseVectorsFromRawText.class);
+		job.setJarByClass(SVFromHDFS2HDFS.class);
 
 		// set dictionary
 		job.getConfiguration().set(HTRCConstants.DICTIONARY_PATH, dictPath);
@@ -173,19 +168,13 @@ public class SparseVectorsFromRawText extends Configured implements Tool {
 		job.getConfiguration().set(DocumentProcessor.ANALYZER_CLASS,
 				analyzerClassName);
 
-		// set data api conf
-		job.getConfiguration().setInt(HTRCConstants.MAX_IDNUM_SPLIT,
-				maxIdsPerSplit);
-		Utilities.setDataAPIConf(job.getConfiguration(), dataAPIConfClassName,
-				maxIdsPerReq);
-
 		// no speculation
 		job.getConfiguration().setBoolean(
 				"mapred.map.tasks.speculative.execution", false);
 		job.getConfiguration().setBoolean(
 				"mapred.reduce.tasks.speculative.execution", false);
 
-		job.setInputFormatClass(IDInputFormat.class);
+		job.setInputFormatClass(SequenceFileInputFormat.class);
 		job.setOutputFormatClass(SequenceFileOutputFormat.class);
 
 		job.setMapOutputKeyClass(Text.class);
@@ -211,7 +200,7 @@ public class SparseVectorsFromRawText extends Configured implements Tool {
 
 	public static void main(String[] args) throws Exception {
 		int res = ToolRunner.run(new Configuration(),
-				new SparseVectorsFromRawText(), args);
+				new SVFromHDFS2HDFS(), args);
 		System.exit(res);
 	}
 }

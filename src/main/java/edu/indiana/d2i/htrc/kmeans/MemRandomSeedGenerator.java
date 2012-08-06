@@ -21,9 +21,7 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Random;
 
 import com.google.common.collect.Lists;
 import com.google.common.io.Closeables;
@@ -41,6 +39,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.DataOutputBuffer;
 import org.apache.hadoop.io.SequenceFile;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
@@ -65,8 +64,6 @@ public final class MemRandomSeedGenerator {
 
 	private static final Logger logger = LoggerFactory
 			.getLogger(MemRandomSeedGenerator.class);
-
-	public static final String K = "k";
 
 	private MemRandomSeedGenerator() {
 	}
@@ -93,28 +90,44 @@ public final class MemRandomSeedGenerator {
 		List<Text> chosenTexts = Lists.newArrayListWithCapacity(k);
 		List<Cluster> chosenClusters = Lists.newArrayListWithCapacity(k);
 		int nextClusterId = 0;
-		Random random = RandomUtils.getRandom();
-		for (String id : idlist) {
+//		Random random = RandomUtils.getRandom();
+//		for (String id : idlist) {
+//			VectorWritable vectorWritable = cache.get(id, vectorTranscoder);
+//			if (vectorWritable != null) {
+//				Cluster newCluster = new Cluster(vectorWritable.get(),
+//						nextClusterId++, measure);
+//				newCluster.observe(vectorWritable.get(), 1);
+//				Text newText = new Text(id);
+//				int currentSize = chosenTexts.size();
+////				if (currentSize < k) {
+////					chosenTexts.add(newText);
+////					chosenClusters.add(newCluster);
+////				} else if (random.nextInt(currentSize + 1) != 0) {
+////					int indexToRemove = random.nextInt(currentSize);
+////					chosenTexts.remove(indexToRemove);
+////					chosenClusters.remove(indexToRemove);
+////					chosenTexts.add(newText);
+////					chosenClusters.add(newCluster);
+////				}
+//			} else {
+//				logger.error("cannot find VectorWritable for " + id);
+////				throw new RuntimeException("cannot find VectorWritable for " + id);
+//			}
+//		}
+		
+		for (int i = 0; i < k; i++) {
+			String id = idlist.get(i);
 			VectorWritable vectorWritable = cache.get(id, vectorTranscoder);
+			
+			System.out.println("pick " + id);
+			
 			if (vectorWritable != null) {
 				Cluster newCluster = new Cluster(vectorWritable.get(),
 						nextClusterId++, measure);
-				newCluster.observe(vectorWritable.get(), 1);
-				Text newText = new Text(id);
-				int currentSize = chosenTexts.size();
-				if (currentSize < k) {
-					chosenTexts.add(newText);
-					chosenClusters.add(newCluster);
-				} else if (random.nextInt(currentSize + 1) != 0) {
-					int indexToRemove = random.nextInt(currentSize);
-					chosenTexts.remove(indexToRemove);
-					chosenClusters.remove(indexToRemove);
-					chosenTexts.add(newText);
-					chosenClusters.add(newCluster);
-				}
+				chosenClusters.add(newCluster);				
 			} else {
 				logger.error("cannot find VectorWritable for " + id);
-//				throw new RuntimeException("cannot find VectorWritable for " + id);
+				throw new RuntimeException("cannot find VectorWritable for " + id);
 			}
 		}
 
@@ -122,9 +135,18 @@ public final class MemRandomSeedGenerator {
 		int maxExpir = conf.getInt(HTRCConstants.MEMCACHED_MAX_EXPIRE, -1);
 		Transcoder<Cluster> clusterTranscoder = new HadoopWritableTranscoder<Cluster>(
 				conf, Cluster.class);
-		for (int i = 0; i < chosenTexts.size(); i++) {
-			cache.set(MemKMeansUtil.toClusterName(String.valueOf(i)), maxExpir,
+		for (int i = 0; i < chosenClusters.size(); i++) {
+			System.out.println("set cluster " + MemKMeansUtil.toClusterName(i));
+			
+			cache.set(MemKMeansUtil.toClusterName(i), maxExpir,
 					chosenClusters.get(i), clusterTranscoder);
+			
+			Cluster cluster = cache.get(MemKMeansUtil.toClusterName(i), clusterTranscoder);
+			if (cluster != null) {
+				DataOutputBuffer buf = new DataOutputBuffer();
+				cluster.write(buf);
+				System.out.println("read from memcached " + cluster.getIdentifier() + " size " + buf.size());
+			}
 		}
 		client.close();
 	}

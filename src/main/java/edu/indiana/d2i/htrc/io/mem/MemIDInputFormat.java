@@ -136,7 +136,7 @@ public class MemIDInputFormat extends FileInputFormat<Text, VectorWritable>  {
 	@Override
 	public List<InputSplit> getSplits(JobContext job) throws IOException {
 		int numIdsInSplit = job.getConfiguration().getInt(HTRCConstants.MAX_IDNUM_SPLIT, 
-				(int)1e6);
+				8000);
 //		String[] hosts = job.getConfiguration().getStrings(HTRCConstants.MEMCACHED_HOSTS);
 //		if (hosts == null)
 //			throw new IllegalArgumentException("No host is found for memcached");

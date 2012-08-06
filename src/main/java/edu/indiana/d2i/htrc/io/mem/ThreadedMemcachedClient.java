@@ -48,8 +48,10 @@ public class ThreadedMemcachedClient {
 		try {
 			clients = new MemcachedClient[numClients];
 			for (int i = 0; i < numClients; i++) {
+//				MemcachedClient client = new MemcachedClient(
+//						new BinaryConnectionFactory(),
+//						AddrUtil.getAddresses(hosts));
 				MemcachedClient client = new MemcachedClient(
-						new BinaryConnectionFactory(),
 						AddrUtil.getAddresses(hosts));
 				clients[i] = client;
 			}

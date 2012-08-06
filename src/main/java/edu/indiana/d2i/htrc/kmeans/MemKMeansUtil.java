@@ -79,12 +79,13 @@ final class MemKMeansUtil {
 				conf, Cluster.class);
 		
 		for (int i = 0; i < k; i++) {
-			Cluster cluster = cache.get(toClusterName(String.valueOf(i)), clusterTranscoder);
+			Cluster cluster = cache.get(toClusterName(i), clusterTranscoder);
 			if (cluster != null) {
 				clusters.add(cluster);
 			} else {
 //				logger.error("cannot find VectorWritable for " + id);
-				throw new RuntimeException("can't find cluster " + toClusterName(String.valueOf(i)));
+				client.close();
+				throw new RuntimeException("can't find cluster " + toClusterName(i));
 			}			
 		}
 		client.close();
@@ -102,12 +103,12 @@ final class MemKMeansUtil {
 				conf, Cluster.class);
 		
 		for (int i = 0; i < k; i++) {
-			Cluster cluster = cache.get(toClusterName(String.valueOf(i)), clusterTranscoder);
+			Cluster cluster = cache.get(toClusterName(i), clusterTranscoder);
 			if (cluster != null) {
 				if (!cluster.isConverged())
 					return false;
 			} else {
-				throw new RuntimeException("can't find cluster " + toClusterName(String.valueOf(i)));
+				throw new RuntimeException("can't find cluster " + toClusterName(i));
 			}			
 		}
 		client.close();
@@ -115,8 +116,8 @@ final class MemKMeansUtil {
 		return true;
 	}
 	
-	public static String toClusterName(String name) {
-		return CLUSTER_NAMESPACE + name;
+	public static String toClusterName(int id) {
+		return CLUSTER_NAMESPACE + id;
 	}
 	
 	public static void kmeansConfigHelper(Configuration conf, int k) {
@@ -139,7 +140,7 @@ final class MemKMeansUtil {
 				FileSystem.get(conf), conf, des, Text.class, Cluster.class);
 		Text key = new Text();
 		for (int i = 0; i < k; i++) {
-			Cluster cluster = cache.get(toClusterName(String.valueOf(i)), clusterTranscoder);
+			Cluster cluster = cache.get(toClusterName(i), clusterTranscoder);
 			key.set(cluster.getIdentifier());
 			writer.append(key, cluster);		
 		}

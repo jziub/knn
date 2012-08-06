@@ -41,6 +41,7 @@ public class UtilitiesDriver {
 	    	pgd.addClass("idvalid", IDValidation.class, "validate id list");
 	    	pgd.addClass("dict", DictionaryCreate.class, "create dictionary");
 	    	pgd.addClass("lucene", TestLuceneClient.class, "test lucene client");
+	    	pgd.addClass("memcached", MemcachedValidation.class, "validate memcached");
 	    	pgd.driver(args);
 	    	
 	    	// Success

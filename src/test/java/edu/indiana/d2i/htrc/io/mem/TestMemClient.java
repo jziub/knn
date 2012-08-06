@@ -26,8 +26,15 @@
 
 package edu.indiana.d2i.htrc.io.mem;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.Text;
+import org.apache.mahout.clustering.kmeans.Cluster;
 import org.apache.mahout.math.RandomAccessSparseVector;
 import org.apache.mahout.math.Vector;
 import org.apache.mahout.math.VectorWritable;
@@ -36,52 +43,49 @@ import net.spy.memcached.MemcachedClient;
 import net.spy.memcached.transcoders.Transcoder;
 
 public class TestMemClient {
-	public static void main(String[] args) {
+	public static void main(String[] args) throws IOException {
+//		ThreadedMemcachedClient client = ThreadedMemcachedClient
+//				.getThreadedMemcachedClient();
+		
+		List<String> hosts = new ArrayList<String>();
+		hosts.add("d2i-openstack-00.cs.indiana.edu:11211");
+		hosts.add("d2i-openstack-01.cs.indiana.edu:11211");
 		ThreadedMemcachedClient client = ThreadedMemcachedClient
-				.getThreadedMemcachedClient();
+				.getThreadedMemcachedClient(1, hosts);
 		MemcachedClient cache = client.getCache();
 		
+		Configuration conf = new Configuration();
 		Transcoder<VectorWritable> transcoder = 
-				new HadoopWritableTranscoder<VectorWritable>(new Configuration(), VectorWritable.class);
+				new HadoopWritableTranscoder<VectorWritable>(conf, VectorWritable.class);
 		
 //		String[] keys = {"inu.30000125311054", "inu.30000125550933", "inu.30000108255526"};
 		String[] keys = {"inu.30000125550933"};
 //		Text val = new Text("my world");
 //		cache.set(key, 60, val, transcoder);
 		
-		for (int i = 0; i < keys.length; i++) {
-			String key = keys[i];
-			VectorWritable obj = cache.get(key, transcoder);
-//			String obj = (String)cache.get(key);
-			if (obj != null) {
-				System.out.println(key);
-//				System.out.println(obj.get().size());
-				System.out.println(obj);
-			}
+//		for (int i = 0; i < keys.length; i++) {
+//			String key = keys[i];
+//			VectorWritable obj = cache.get(key, transcoder);
+////			String obj = (String)cache.get(key);
+//			if (obj != null) {
+//				System.out.println(key);
+////				System.out.println(obj.get().size());
+//				System.out.println(obj);
+//			}
+//		}
+
+	
+		BufferedWriter writer = new BufferedWriter(new FileWriter("out.txt"));
+		Transcoder<Cluster> clusterTranscoder = new HadoopWritableTranscoder<Cluster>(
+				conf, Cluster.class);
+		for (int i = 0; i < 30; i++) {
+			String key = "cl:" + i;
+			Cluster obj = cache.get(key, clusterTranscoder);
+//			System.out.println(obj.asFormatString());
+			writer.write(obj.asFormatString() + "\n");
 		}
+		writer.close();
 		
-		
-//		Transcoder<Text> transcoder = 
-//				new HadoopWritableTranscoder<Text>(new Configuration(), Text.class);
-		
-//		for (int i = 0; i < 3; i++) {
-//			String key = "hi" + i;
-//			Vector val = new RandomAccessSparseVector(10);
-//			val.setQuick(i+1, i+1);
-//			VectorWritable vecWritable = new VectorWritable(val);
-//			cache.add(key, 60, vecWritable, transcoder);
-////			cache.add(key, 60, new Text(String.valueOf(i+1)), transcoder);
-//		}
-//		
-//		for (int i = 0; i < 3; i++) {
-//			String key = "hi" + i;
-//			VectorWritable vecWritable = cache.get(key, transcoder);
-//			System.out.println(vecWritable);
-//			
-////			Text text = cache.get(key, transcoder);
-////			System.out.println(text);
-//		}
-		
-//		System.exit(0);
+		System.exit(0);
 	}
 }

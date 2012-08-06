@@ -93,6 +93,8 @@ public class MemCachedKMeansDriver extends AbstractJob {
 		addOption(DefaultOptionCreator.overwriteOption().create());
 		addOption(DefaultOptionCreator.clusteringOption().create());
 		addOption(DefaultOptionCreator.methodOption().create());
+		
+		
 
 		if (parseArguments(args) == null) {
 			return -1;
@@ -124,6 +126,7 @@ public class MemCachedKMeansDriver extends AbstractJob {
 		MemKMeansUtil.kmeansConfigHelper(conf, k);
 		
 		// create the seeds
+		log.info("Create seeds.");
 		if (hasOption(DefaultOptionCreator.NUM_CLUSTERS_OPTION)) {
 			MemRandomSeedGenerator
 				.buildRandom(

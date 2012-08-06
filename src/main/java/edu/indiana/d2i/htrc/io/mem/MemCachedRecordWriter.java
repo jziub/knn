@@ -83,17 +83,18 @@ public class MemCachedRecordWriter<K extends Writable, V extends Writable> exten
 			InterruptedException {
 //		System.out.println(key.toString() + " " + ((VectorWritable)val).get());
 		
-		client.getCache().set(NameSpace + key.toString(), MAX_EXPIRE, val, transcoder);
+//		client.getCache().set(NameSpace + key.toString(), MAX_EXPIRE, val, transcoder);
+		client.getCache().set(key.toString(), MAX_EXPIRE, val, transcoder);
 		
 		// validate
-		V vecWritable = client.getCache().get(NameSpace + key.toString(),
-				transcoder);
-		if (vecWritable == null) {
-			throw new RuntimeException(key.toString()
-					+ " is not written to Memcached.");
-		} else {
-			logger.info(key.toString());
-		}
+//		V vecWritable = client.getCache().get(NameSpace + key.toString(),
+//				transcoder);
+//		if (vecWritable == null) {
+//			throw new RuntimeException(key.toString()
+//					+ " is not written to Memcached.");
+//		} else {
+//			logger.info(key.toString());
+//		}
 	}
 
 }
